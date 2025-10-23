@@ -10,15 +10,14 @@ class Submission extends Model
     protected $fillable = [
         'dealer_id',
         'event_id',
-        'first_name',
-        'last_name',
         'full_name',
         'email',
         'phone',
+        'vehicle_year',
+        'vehicle_make',
+        'vehicle_model',
         'guest_count',
         'wants_appointment',
-        'know_your_car_date',
-        'vehicle_purchased',
         'notes',
         'meta_json',
     ];

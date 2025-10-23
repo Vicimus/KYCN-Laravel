@@ -24,13 +24,19 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate(['password' => 'required']);
-        $ok = hash_equals((string) config('app.admin_password', env('ADMIN_PASSWORD', '')), (string) $request->password);
+
+        $ok = hash_equals(
+            (string) config('app.admin_password', env('ADMIN_PASSWORD', '')),
+            (string) $request->password
+        );
+
         if (!$ok) {
-            return back()->withInput()->withErrors(['password' => 'Incorrect password.']);
+            return back()->withErrors(['password' => 'Incorrect password.'])->withInput();
         }
+
         session(['is_admin' => true]);
 
-        return redirect()->route('admin.index');
+        return redirect()->route('admin.dealers.index');
     }
 
     /**
@@ -40,6 +46,6 @@ class AuthController extends Controller
     {
         session()->flush();
 
-        return redirect()->route('login.show');
+        return redirect()->route('admin.login.show');
     }
 }

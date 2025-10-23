@@ -1,26 +1,23 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DealerController;
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\IcsController;
-use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PublicFormController;
+use App\Http\Controllers\Admin\DealerController;
 
-Route::get('/', fn() => redirect()->route('admin.index'));
+Route::get('/', [PublicFormController::class, 'show'])->name('public.form');
+Route::post('/', [PublicFormController::class, 'store'])->name('public.form.store');
+Route::get('/thank-you', fn () => view('public.thankyou'))->name('public.thankyou');
 
-Route::get('/login', [AuthController::class, 'show'])->name('login.show');
-Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// ADMIN AUTH
+Route::get('/admin/login', [AuthController::class, 'show'])->name('admin.login.show');
+Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.perform');
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
-Route::middleware('admin')->group(function () {
-    Route::get('/admin', [DashboardController::class, 'index'])->name('admin.index');
-    Route::get('/admin/export', [ExportController::class, 'csv'])->name('export.csv');
-    Route::get('/admin/ics', [IcsController::class, 'feed'])->name('ics.feed');
-    Route::get('/admin/dealers/{dealer}/edit', [DealerController::class, 'edit'])->name('dealers.edit');
-    Route::patch('/admin/dealers/{dealer}', [DealerController::class, 'update'])->name('dealers.update');
+// ADMIN-ONLY
+Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dealers', [DealerController::class, 'index'])->name('dealers.index');
+    Route::get('/dealers/create', [DealerController::class, 'create'])->name('dealers.create');
+    Route::post('/dealers', [DealerController::class, 'store'])->name('dealers.store');
+    Route::get('/dealers/{dealer:code}', [DealerController::class, 'show'])->name('dealers.show');
 });
-
-Route::get('/form', [SubmissionController::class, 'create'])->name('submissions.create');
-Route::post('/form', [SubmissionController::class, 'store'])->name('submissions.store');

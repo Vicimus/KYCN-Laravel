@@ -11,9 +11,10 @@ class Dealer extends Model
         'name',
         'code',
         'portal_token',
-        'dealership_url',
         'dealership_logo',
+        'dealership_url',
     ];
+
 
     /**
      * @return HasMany
