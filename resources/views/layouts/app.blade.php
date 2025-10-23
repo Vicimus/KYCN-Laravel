@@ -6,21 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <style>
-        .sidebar {
-            width: 300px;
-            min-height: 100vh;
-        }
-
-        .sticky-actions {
-            position: sticky;
-            bottom: 0;
-        }
-
-        .btn-toggle-group .btn {
-            min-width: 48px;
-        }
-    </style>
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @stack('head')
 </head>
 <body>

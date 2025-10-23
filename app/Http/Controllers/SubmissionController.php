@@ -22,15 +22,23 @@ class SubmissionController extends Controller
      */
     public function create(Request $request): View
     {
-        $d = (string) $request->query('d', '');
-        $embed = $request->boolean('embed');
+        $embed = (bool) $request->boolean('embed');
+        $fresh = (bool) $request->boolean('fresh');
+        $dealerCode = (string) $request->query('d', '');
 
-        $dealer = $d ? Dealer::where('code', $d)->orWhere('dealership_url', $d)->first() : null;
+        $dealership = null;
+        $prefillDealershipName = '';
 
-        return view('submissions.form', [
+        if (!$fresh && $dealerCode !== '') {
+            $dealership = Dealer::where('code', $dealerCode)->first();
+            $prefillDealershipName = $dealership->name ?? '';
+        }
+
+        return view('submissions.create', [
             'embed' => $embed,
-            'dealerCode' => $d,
-            'dealer' => $dealer,
+            'dealerCode' => $dealerCode,
+            'prefillDealershipName' => $prefillDealershipName,
+            'dealershipLogo' => $dealership->dealership_logo ?? null,
         ]);
     }
 

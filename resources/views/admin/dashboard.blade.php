@@ -2,7 +2,7 @@
 @section('title','KYCN Dashboard')
 
 @section('body')
-    <div class="d-flex">
+    <div class="d-flex flex-grow-1 flex-row w-100">
         <aside class="sidebar d-flex flex-column bg-dark text-white border-end">
             <div class="p-3 border-bottom border-secondary text-center fw-semibold">KYCN Dashboard</div>
             <div class="p-3 d-flex flex-column gap-3">
@@ -25,94 +25,114 @@
                 </div>
                 <div class="d-flex justify-content-end">
                     <div class="btn-group">
-                        <button id="submitBtn" class="btn btn-sm btn-primary" title="Apply Filter"><i
-                                    class="fas fa-filter"></i></button>
-                        <button id="clearBtn" class="btn btn-sm btn-outline-secondary" title="Reset"><i
-                                    class="fas fa-rotate-left"></i></button>
+                        <button id="submitBtn" class="btn btn-sm btn-primary" title="Apply Filter">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button id="clearBtn" class="btn btn-sm btn-outline-secondary" title="Reset">
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
                     </div>
                 </div>
             </div>
             <div class="mt-auto p-3 border-top border-secondary text-center">
-                <form method="post" action="{{ route('logout') }}">@csrf
-                    <button class="btn btn-sm btn-light"><i class="fas fa-arrow-right-from-bracket me-2"></i> Logout
+                <form method="post" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="btn btn-sm btn-light">
+                        <i class="fas fa-arrow-right-from-bracket me-2"></i> Logout
                     </button>
                 </form>
             </div>
         </aside>
 
-        <main class="flex-grow-1 p-3">
-            <div class="d-flex gap-2 mb-3">
-                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newRegModal">New
-                    Registration
-                </button>
-                @if($dealerCode && $rows->count())
-                    <div class="ms-auto btn-group">
-                        <a class="btn btn-sm btn-primary"
-                           href="{{ route('export.csv', ['dealer'=>$dealerCode,'start'=>$start,'end'=>$end]) }}"><i
-                                    class="fas fa-file-csv"></i></a>
-                        <a class="btn btn-sm btn-primary"
-                           href="{{ route('ics.feed', ['dealer'=>$dealerCode]) }}"><i class="fas fa-calendar-plus"></i></a>
-                    </div>
-                @endif
-            </div>
-
-            <div class="row g-3">
-                <div class="col-lg-4 col-xl-3">
-                    <h5>Submissions by Dealer</h5>
-                    <ul class="list-group shadow-sm">
-                        @foreach($byDealer as $d)
-                            @php $isActive = $dealerCode === $d->code; @endphp
-                            <li class="list-group-item p-0 {{ $isActive ? 'active' : '' }}">
-                                <a class="d-flex justify-content-between align-items-center py-2 px-3 text-decoration-none"
-                                   href="{{ route('admin.index',['dealer'=>$d->code,'start'=>$start,'end'=>$end]) }}">
-                                    <span class="text-truncate {{ $isActive ? 'text-white' : '' }}">{{ $d->name }}</span>
-                                    <span class="badge {{ $isActive ? 'text-bg-light' : 'text-bg-primary' }}">{{ (int)($d->cnt ?? 0) }}</span>
+        <div class="d-flex flex-grow-1 main-content-wrapper">
+            <div class="main-content d-flex w-100">
+                <div class="container">
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newRegModal">
+                            New Registration
+                        </button>
+                        @if($rows->count())
+                            <div class="ms-auto btn-group">
+                                <a class="btn btn-sm btn-primary"
+                                   href="{{ route('export.csv', ['dealer' => $dealerCode, 'start' => $start, 'end' => $end]) }}"
+                                >
+                                    <i class="fas fa-file-csv"></i>
                                 </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                                <a class="btn btn-sm btn-primary"
+                                   href="{{ route('ics.feed', ['dealer' => $dealerCode]) }}"
+                                >
+                                    <i class="fas fa-calendar-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
 
-                <div class="col-lg-8 col-xl-9">
-                    @if(!$rows->count())
-                        <div class="alert alert-info">No submissions for this range.</div>
-                    @else
-                        <div class="border rounded-2 shadow-sm table-responsive">
-                            <table class="table m-0 text-nowrap">
-                                <thead>
-                                <tr>
-                                    <th>When</th>
-                                    <th>Dealer</th>
-                                    <th>Name</th>
-                                    <th>Guests</th>
-                                    <th>Appt?</th>
-                                    <th>Notes</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach($rows as $r)
-                                    <tr>
-                                        <td>{{ \Carbon\Carbon::parse($r->created_at)->format('M jS, Y • g:ia') }}</td>
-                                        <td>{{ $r->dealer->name }}</td>
-                                        <td>{{ $r->full_name }}</td>
-                                        <td>{{ (int)$r->guest_count }}</td>
-                                        <td>{{ $r->wants_appointment ? 'Yes' : 'No' }}</td>
-                                        <td>
-                                            @php
-                                                $lines = preg_split('/\r\n|\n|\r|\s*\|\s*/', (string)($r->notes ?? ''));
-                                                $lines = array_values(array_filter(array_map('trim', $lines), fn($l)=> $l !== '' && stripos($l,'Submission ID:') !== 0));
-                                            @endphp
-                                            {!! implode('<br>', array_map('e', $lines)) !!}
-                                        </td>
-                                    </tr>
+                    <div class="row g-3">
+                        <div class="col-lg-4 col-xl-3">
+                            <h5>Submissions by Dealer</h5>
+                            <ul class="list-group shadow-sm">
+                                @foreach($byDealer as $d)
+                                    @php $isActive = $dealerCode === $d->code; @endphp
+                                    <li class="list-group-item d-flex flex-row gap-1 p-0 {{ $isActive ? 'active' : '' }}">
+                                        <a class="d-flex justify-content-between align-items-center py-2 px-3 text-decoration-none"
+                                           href="{{ route('admin.index', ['dealer' => $d->code, 'start' => $start, 'end' => $end]) }}">
+                                            <span class="text-truncate {{ $isActive ? 'text-white' : '' }}">{{ $d->name }}</span>
+                                            <span class="badge {{ $isActive ? 'text-bg-light' : 'text-bg-primary' }}">{{ (int) ($d->cnt ?? 0) }}</span>
+                                        </a>
+                                        @if ($isActive && !empty($rows))
+                                            <a href="{{ route('dealers.edit', ['dealer' => $d->id]) }}"
+                                               class="btn btn-sm btn-outline-secondary"
+                                            >
+                                                <i class="fas fa-pencil"></i>
+                                            </a>
+                                        @endif
+                                    </li>
                                 @endforeach
-                                </tbody>
-                            </table>
+                            </ul>
                         </div>
-                    @endif
+
+                        <div class="col-lg-8 col-xl-9">
+                            @if(!$rows->count())
+                                <div class="alert alert-info">No submissions for this range.</div>
+                            @else
+                                <div class="border rounded-2 shadow-sm table-responsive">
+                                    <table class="table m-0 text-nowrap">
+                                        <thead>
+                                        <tr>
+                                            <th>When</th>
+                                            <th>Dealer</th>
+                                            <th>Name</th>
+                                            <th>Guests</th>
+                                            <th>Appt?</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach($rows as $r)
+                                            <tr>
+                                                <td>{{ \Carbon\Carbon::parse($r->created_at)->format('M jS, Y • g:ia') }}</td>
+                                                <td>{{ $r->dealer->name }}</td>
+                                                <td>{{ $r->full_name }}</td>
+                                                <td>{{ (int)$r->guest_count }}</td>
+                                                <td>{{ $r->wants_appointment ? 'Yes' : 'No' }}</td>
+                                                <td>
+                                                    @php
+                                                        $lines = preg_split('/\r\n|\n|\r|\s*\|\s*/', (string)($r->notes ?? ''));
+                                                        $lines = array_values(array_filter(array_map('trim', $lines), fn($l)=> $l !== '' && stripos($l,'Submission ID:') !== 0));
+                                                    @endphp
+                                                    {!! implode('<br>', array_map('e', $lines)) !!}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 
     {{-- Modal with embedded form --}}
@@ -125,8 +145,9 @@
                 </div>
                 <div class="modal-body p-0">
                     <iframe id="kycnFormFrame"
-                            src="{{ route('submissions.create', ['embed'=>1] + ($dealerCode ? ['d'=>$dealerCode] : [])) }}"
-                            style="border:0;width:100%;height:85vh"></iframe>
+                            src="{{ route('submissions.create', ['embed' => 1, 'fresh' => 1, 't' => time()]) }}"
+                            style="border:0;width:100%;height:100vh">
+                    </iframe>
                 </div>
             </div>
         </div>
@@ -203,10 +224,11 @@
 
             document.getElementById('newRegModal')?.addEventListener('shown.bs.modal', () => {
                 const f = document.getElementById('kycnFormFrame');
-                try {
-                    f.contentWindow.location.reload();
-                } catch {
-                }
+                const url = new URL(f.src, window.location.origin);
+                url.searchParams.set('t', Date.now().toString());
+                url.searchParams.set('fresh', '1');
+
+                f.src = url.toString();
             });
         </script>
     @endpush
