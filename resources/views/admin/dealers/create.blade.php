@@ -7,10 +7,6 @@
                 <h3 class="m-0">Create Dealership</h3>
             </div>
 
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
             <form method="post" action="{{ route('admin.dealers.store') }}" enctype="multipart/form-data" class="m-0 px-3 pb-3">
                 @csrf
 

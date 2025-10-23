@@ -7,10 +7,6 @@
                 <h3 class="m-0">Edit Dealership</h3>
             </div>
 
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
             <form method="post" action="{{ route('admin.dealers.update', $dealer) }}" enctype="multipart/form-data" class="m-0 px-3 pb-3">
                 @csrf @method('PUT')
 

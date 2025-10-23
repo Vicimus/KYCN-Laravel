@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         KYCN
         @hasSection('title')
             &nbsp;–&nbsp;@yield('title')
         @endif
     </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone=no,email=no,address=no">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon/favicon-16x16.png') }}">
@@ -27,6 +28,30 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.alert[data-autohide="true"]').forEach(el => {
+            setTimeout(() => {
+                const alert = new bootstrap.Alert(el);
+                try {
+                    alert.close();
+                } catch (e) {
+                }
+            }, 5000);
+        });
+
+        document.querySelectorAll('form').forEach(f => {
+            f.addEventListener('submit', () => {
+                const btn = f.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.dataset.originalText = btn.innerHTML;
+                    btn.innerHTML = 'Submitting...';
+                }
+            });
+        });
+    });
+</script>
 @stack('scripts')
 </body>
 </html>

@@ -4,18 +4,18 @@
 
 <nav class="navbar navbar-light bg-light border-bottom">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold"
+        <a class="text-decoration-none text-dark fw-bold"
            href="{{ $isAdmin ? route('admin.dealers.index') : route('public.form') }}"
         >
             KYCN {{ $isAdmin ? 'Admin' : '' }}
         </a>
 
         <div class="ms-auto d-flex align-items-center gap-2">
-            @if ($isAdmin)
-                <a class="btn btn-sm btn-primary" href="{{ route('public.form') }}">
-                    New Registration
-                </a>
+            <a class="btn btn-sm btn-primary" href="{{ route('public.form') }}">
+                New Registration
+            </a>
 
+            @if ($isAdmin)
                 <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.dealers.create') }}">
                     Create Dealer
                 </a>
