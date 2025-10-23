@@ -17,6 +17,7 @@
                     <th>URL</th>
                     <th>Created</th>
                     <th>Updated</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -37,6 +38,9 @@
                         </td>
                         <td>{{ $d->created_at?->format('Y-m-d H:i:s') }}</td>
                         <td>{{ $d->updated_at?->format('Y-m-d H:i:s') }}</td>
+                        <td>
+                            <a href="{{ route('admin.dealers.edit', $d) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>

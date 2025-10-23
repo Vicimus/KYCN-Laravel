@@ -54,12 +54,19 @@ class PublicFormController extends Controller
         if ($request->query('d')) {
             $dealer = Dealer::where('code', $request->query('d'))->first();
         }
+
+        $qs = [];
+        if ($request->filled('d')) {
+            $qs['d'] = $request->query('d');
+        }
+
         if (!$dealer && !empty($data['dealership_name'])) {
             $dealer = Dealer::firstOrCreate(
                 ['name' => trim($data['dealership_name'])],
                 ['code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $data['dealership_name'])) ?: 'DEALER' . random_int(1000, 9999)]
             );
         }
+
         if (!$dealer) {
             $dealer = Dealer::orderBy('id')->first();
         }
@@ -68,6 +75,7 @@ class PublicFormController extends Controller
         if (!empty($data['know_your_car_date'])) {
             $notes[] = 'KYCN Date: ' . date('M jS, Y', strtotime($data['know_your_car_date']));
         }
+
         if (!empty($data['vehicle_purchased'])) {
             $notes[] = 'Vehicle Purchased: ' . date('M jS, Y', strtotime($data['vehicle_purchased']));
         }
@@ -76,18 +84,21 @@ class PublicFormController extends Controller
         Submission::create([
             'dealer_id' => $dealer?->id,
             'event_id' => null,
-            'full_name' => trim($data['first_name'] . ' ' . $data['last_name']),
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'full_name' => trim($data['first_name'].' '.$data['last_name']),
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'vehicle_year' => null,
-            'vehicle_make' => null,
-            'vehicle_model' => null,
             'guest_count' => (int) $data['number_of_attendees'],
             'wants_appointment' => 0,
+            'know_your_car_date' => $data['know_your_car_date'] ?? null,
+            'vehicle_purchased' => $data['vehicle_purchased'] ?? null,
             'notes' => $notesText,
             'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),
         ]);
 
-        return redirect()->route('public.thankyou');
+        return redirect()
+            ->route('public.form', $qs)
+            ->with('success', 'Your Registration has Been Received');
     }
 }

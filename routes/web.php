@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\DealerController;
 
 Route::get('/', [PublicFormController::class, 'show'])->name('public.form');
 Route::post('/', [PublicFormController::class, 'store'])->name('public.form.store');
-Route::get('/thank-you', fn () => view('public.thankyou'))->name('public.thankyou');
 
 // ADMIN AUTH
 Route::get('/admin/login', [AuthController::class, 'show'])->name('admin.login.show');
@@ -20,4 +19,6 @@ Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dealers/create', [DealerController::class, 'create'])->name('dealers.create');
     Route::post('/dealers', [DealerController::class, 'store'])->name('dealers.store');
     Route::get('/dealers/{dealer:code}', [DealerController::class, 'show'])->name('dealers.show');
+    Route::get('/dealers/{dealer:code}/edit', [DealerController::class,'edit'])->name('dealers.edit');
+    Route::put('/dealers/{dealer:code}', [DealerController::class,'update'])->name('dealers.update');
 });

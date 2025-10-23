@@ -14,6 +14,13 @@
                     </div>
                 </div>
 
+                @if(session('success'))
+                    <div class="alert alert-success d-flex justify-content-between align-items-center">
+                        <span>{{ session('success') }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @if ($errors->any())
                     <div class="alert alert-danger">
                         @foreach($errors->all() as $e)
@@ -22,10 +29,9 @@
                     </div>
                 @endif
 
-                <form method="post" action="{{ route('public.form.store', request()->query()) }}">
+                <form method="post" id="kycnForm" action="{{ route('public.form.store', request()->query()) }}">
                     @csrf
 
-                    <!-- Dealership Name is visible; prefilled only if we know it -->
                     <div class="mb-3">
                         <label class="form-label">Dealership Name</label>
                         <input name="dealership_name"
@@ -78,11 +84,28 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end mt-3">
-                        <button class="btn btn-primary">Submit</button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button class="btn btn-sm btn-secondary" type="reset">Reset</button>
+                        <button class="btn btn-sm btn-primary" type="submit">Submit</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        (function () {
+            const justSucceeded = {{ session()->has('success') ? 'true' : 'false' }};
+            if (justSucceeded) {
+                const f = document.getElementById('kycnForm');
+                const hasErrors = {{ $errors->any() ? 'true' : 'false' }};
+                if (!hasErrors) {
+                    f.reset();
+                }
+                const first = f.querySelector('[name="first_name"]');
+                first && first.focus();
+
+                document.querySelector('button[type="reset"]').click();
+            }
+        })();
+    </script>
 @endsection

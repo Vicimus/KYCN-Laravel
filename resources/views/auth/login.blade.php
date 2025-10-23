@@ -28,8 +28,16 @@
                         @error('password')
                         <div class="invalid-feedback">Incorrect password.</div>@enderror
                     </div>
-                    <button class="btn btn-primary w-100">Enter</button>
+                    <button class="btn btn-sm btn-primary w-100">Enter</button>
                 </form>
+
+                <div class="mt-3">
+                    <a href="{{ route('public.form') }}"
+                       class="btn btn-sm btn-outline-secondary"
+                    >
+                        Register
+                    </a>
+                </div>
             </div>
         </div>
     </div>
