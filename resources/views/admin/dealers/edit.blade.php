@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('content')
+@section('admin')
     <div class="container py-4" style="max-width:960px;">
         <h2 class="mb-4">Edit Dealership</h2>
         <form method="post" action="{{ route('admin.dealers.update', $dealer) }}" enctype="multipart/form-data">
@@ -18,7 +18,7 @@
                 @if($dealer->dealership_logo)
                     <img src="{{ $dealer->dealership_logo }}" style="height:46px" class="me-3 border p-1 bg-white">
                 @else
-                    <span class="text-muted">No logo</span>
+                    <span class="text-secondary">No logo</span>
                 @endif
             </div>
 

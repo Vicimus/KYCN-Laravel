@@ -8,7 +8,7 @@
 }
 
 body {
-    background-color: #FFF;
+    background: linear-gradient(135deg, #232526, #414345);
     box-sizing: border-box;
     display: flex;
     color: var(--midnight);
@@ -20,6 +20,11 @@ body {
 
 body * {
     box-sizing: border-box;
+}
+
+body > .container {
+    max-width: 1440px;
+    padding: 1rem;
 }
 
 .fs-sm {

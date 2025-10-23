@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
-@section('content')
+@section('admin')
     <div class="container py-4" style="max-width:960px;">
         <h2 class="mb-4">Create Dealership</h2>
-        <form method="post" action="{{ route('dealers.store') }}" enctype="multipart/form-data">
+        <form method="post" action="{{ route('admin.dealers.store') }}" enctype="multipart/form-data">
             @csrf
 
             <div class="mb-3">

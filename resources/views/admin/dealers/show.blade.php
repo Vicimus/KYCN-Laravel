@@ -31,7 +31,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-muted">No submissions yet.</td>
+                        <td colspan="5" class="text-secondary">No submissions yet.</td>
                     </tr>
                 @endforelse
                 </tbody>

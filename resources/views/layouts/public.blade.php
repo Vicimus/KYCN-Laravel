@@ -1,10 +1,18 @@
 @extends('layouts.base')
 
+@section('title', 'New Register')
+
 @section('content')
-    <div class="min-vh-100 d-flex align-items-start justify-content-center"
-         style="background: linear-gradient(135deg, #ff8a00, #da1b60);">
-        <div class="w-100" style="max-width: 980px;">
-            @yield('public')
+    <nav class="navbar navbar-light bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="ms-auto">
+                <a href="{{ route('admin.login.show') }}"
+                   class="text-decoration-none btn btn-sm btn-secondary fs-md"
+                >
+                    Admin
+                </a>
+            </div>
         </div>
-    </div>
+    </nav>
+    @yield('public')
 @endsection
