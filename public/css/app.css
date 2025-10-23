@@ -27,6 +27,11 @@ body > .container {
     padding: 1rem;
 }
 
+.set-max-width {
+    margin: auto;
+    max-width: 1000px;
+}
+
 .fs-sm {
     font-size: 10px;
 }

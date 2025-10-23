@@ -1,19 +1,8 @@
-@extends('layouts.base')
+@extends('layouts.app')
 
 @section('title','Admin Login')
 
 @section('content')
-    <nav class="navbar navbar-light bg-light border-bottom">
-        <div class="container-fluid">
-            <div class="ms-auto">
-                <a href="{{ route('public.form') }}"
-                   class="text-decoration-none btn btn-sm btn-secondary fs-md"
-                >
-                    New Registration
-                </a>
-            </div>
-        </div>
-    </nav>
     <div class="container" style="max-width:420px">
         <div class="bg-white rounded-3 shadow p-4">
             <h1 class="h4 mb-3 text-center">KYCN Admin</h1>
@@ -34,8 +23,6 @@
                            placeholder="Password"
                            class="form-control @error('password') is-invalid @enderror"
                            required autofocus>
-                    @error('password')
-                    <div class="invalid-feedback">Incorrect password.</div>@enderror
                 </div>
                 <button class="btn btn-sm btn-primary w-100">Enter</button>
             </form>
