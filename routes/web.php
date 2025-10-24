@@ -14,7 +14,7 @@ Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
 // ADMIN-ONLY
-Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['admin', 'admin.fresh'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dealers', [DealerController::class, 'index'])->name('dealers.index');
     Route::get('/dealers/create', [DealerController::class, 'create'])->name('dealers.create');
     Route::post('/dealers', [DealerController::class, 'store'])->name('dealers.store');

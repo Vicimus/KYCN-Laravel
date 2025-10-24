@@ -31,12 +31,12 @@ class AuthController extends Controller
         );
 
         if (!$ok) {
-            return back()->withErrors(['password' => 'Incorrect password.'])->withInput();
+            return back()->withInput()->withErrors(['password' => 'Incorrect password.']);
         }
 
-        session(['is_admin' => true]);
+        session(['is_admin' => true, 'admin_last_activity' => time()]);
 
-        return redirect()->route('admin.dealers.index');
+        return redirect()->intended(route('admin.dealers.index'));
     }
 
     /**

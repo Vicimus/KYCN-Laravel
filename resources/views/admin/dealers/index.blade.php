@@ -1,71 +1,148 @@
+@php
+    use Illuminate\Support\Str;
+@endphp
+
 @extends('layouts.admin')
 
 @section('admin')
-    <div class="container">
-        <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100">
-            <div class="p-3">
-                <h3 class="m-0">View Dealerships</h3>
-            </div>
+    <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
+        <div class="p-3 d-flex justify-content-between flex-column flex-lg-row gap-3 w-100">
+            <div class="fw-bold">View Dealerships</div>
 
-            <div class="p-3">
-                <form method="get" class="d-flex align-items-end gap-2">
-                    <input type="search" class="form-control form-control-sm"
-                           name="q" value="{{ request('q') }}" placeholder="Search dealers...">
-                    <button type="reset" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-rotate-left"></i>
-                    </button>
-                </form>
+            <div class="d-flex flex-column gap-1">
+                <div class="d-flex align-items-end gap-2">
+                    <input type="text" class="form-control form-control-sm"
+                           name="q" value="{{ $q }}" placeholder="Search dealers...">
+                    <div class="btn-group" role="group">
+                        <button id="page-submit-button"
+                                class="btn btn-sm btn-primary"
+                                title="Apply Filters"
+                        >
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button id="page-reset-button"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Clear"
+                        >
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
 
                 @if(!empty($q))
-                    <div class="text-secondary fs-md">
+                    <div class="text-secondary fs-md text-end">
                         Showing {{ $dealers->total() }} result(s) for “{{ $q }}”
                     </div>
                 @endif
             </div>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                    <tr>
-                        <th>Dealership Name</th>
-                        <th>Logo</th>
-                        <th>URL</th>
-                        <th>Created</th>
-                        <th>Updated</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dealers as $d)
-                        <tr>
-                            <td><a href="{{ route('admin.dealers.show', $d) }}">{{ $d->name }}</a></td>
-                            <td>@if($d->dealership_logo)
-                                    <img src="{{ $d->dealership_logo }}" style="height:34px">
-                                @endif</td>
-                            <td class="text-break">
-                                @php $url = url('/?d='.$d->code); @endphp
-                                <div class="d-flex align-items-center gap-2">
-                                    <a href="{{ $url }}">{{ $url }}</a>
-                                    <button class="btn btn-sm btn-outline-secondary"
-                                            onclick="navigator.clipboard.writeText('{{ $url }}')">Copy
-                                    </button>
-                                </div>
-                            </td>
-                            <td>{{ $d->created_at?->format('Y-m-d H:i:s') }}</td>
-                            <td>{{ $d->updated_at?->format('Y-m-d H:i:s') }}</td>
-                            <td>
-                                <a href="{{ route('admin.dealers.edit', $d) }}"
-                                   class="btn btn-sm btn-outline-secondary">Edit</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="px-3 pb-3">
-                {{ $dealers->links() }}
-            </div>
         </div>
+
+        <div class="table-responsive border-top">
+            <table class="table kycn-table sm-table m-0 text-nowrap">
+                <thead>
+                <tr>
+                    <th>Dealership Name</th>
+                    <th>Logo</th>
+                    <th>URL</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($dealers as $d)
+                    @php $url = url('/?d='.$d->code); @endphp
+                    <tr>
+                        <td>
+                            <a href="{{ route('admin.dealers.show', $d) }}"
+                               class="text-decoration-none fw-bold"
+                            >
+                                {{ $d->name }}
+                            </a>
+                        </td>
+                        <td>
+                            <img src="{{ $d->dealership_logo ?: asset('images/placeholder.png') }}"
+                                 alt="{{ $d->name }} logo"
+                                 class="table-dealer-logo"
+                            />
+                        </td>
+                        <td class="text-break">
+                            <a href="{{ $url }}"
+                               class="text-decoration-none fw-bold"
+                            >
+                                {{ $url }}
+                            </a>
+                        </td>
+                        <td>{{ $d->created_at?->format('F jS, Y \a\t g:i A') }}</td>
+                        <td>{{ $d->updated_at?->format('F jS, Y \a\t g:i A') }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        data-copy-url="{{ $url }}"
+                                        title="Copy URL"
+                                >
+                                    <i class="far fa-copy"></i>
+                                </button>
+                                <a href="{{ route('admin.dealers.edit', $d) }}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="Edit {{ $d->name }}"
+                                >
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        @include('components.paginator', ['items' => $dealers])
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initSubmit(['q'], {searchSubmitNames: ['q']});
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-copy-url]');
+                if (!btn) {
+                    return;
+                }
+                e.preventDefault();
+
+                const {copyUrl} = btn.dataset;
+                const icon = btn.querySelector('i');
+
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                btn.classList.add('btn-outline-success');
+
+                const finish = () => {
+                    setTimeout(() => {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        btn.classList.remove('btn-outline-success');
+                    }, 1200);
+                };
+
+                const fallback = () => {
+                    const ta = document.createElement('textarea');
+                    ta.value = copyUrl;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    finish();
+                };
+
+                if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(copyUrl).then(finish).catch(() => fallback());
+                } else {
+                    fallback();
+                }
+            });
+        });
+    </script>
 @endsection

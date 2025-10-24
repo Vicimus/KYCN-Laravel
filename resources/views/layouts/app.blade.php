@@ -29,6 +29,115 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // === Utilities ===
+    const on = (el, ev, fn) => el && el.addEventListener(ev, fn);
+
+    // === Submit ===
+    function initSubmit(keys = [], options = {}) {
+        const getEl = name => document.querySelector(`[name="${name}"]`);
+        const submitBtn = document.getElementById('page-submit-button');
+        const resetBtn = document.getElementById('page-reset-button');
+        const {
+            autoSubmitNames = [],
+            searchSubmitNames = [],
+            swapPairs = [],
+            busyMessage = 'Retrieving data...',
+        } = options;
+
+        if (!Array.isArray(keys) || keys.length === 0) {
+            return;
+        }
+
+        const readVal = (name) => {
+            const el = getEl(name);
+            if (!el) {
+                return '';
+            }
+
+            if (el.type === 'checkbox') {
+                return el.checked ? (el.value || '1') : '';
+            }
+
+            if (el.tagName === 'SELECT' && el.multiple) {
+                return Array.from(el.selectedOptions).map(o => o.value).filter(Boolean).join(',');
+            }
+
+            return (el.value ?? '').trim();
+        };
+
+        function navigate({clear = false} = {}) {
+            const url = new URL(window.location.href);
+            const sp = url.searchParams;
+
+            sp.delete('page');
+
+            if (clear) {
+                keys.forEach((k) => sp.delete(k));
+            } else {
+                keys.forEach((k) => {
+                    const v = readVal(k);
+                    if (v !== '') {
+                        sp.set(k, v);
+                    } else {
+                        sp.delete(k);
+                    }
+                });
+
+                swapPairs.forEach(([a, b]) => {
+                    const va = sp.get(a), vb = sp.get(b);
+                    if (va && vb && va > vb) {
+                        sp.set(a, vb);
+                        sp.set(b, va);
+                    }
+                });
+            }
+
+            url.search = sp.toString();
+            location.assign(url.toString());
+        }
+
+        on(submitBtn, 'click', (e) => {
+            e.preventDefault();
+            navigate({clear: false});
+        });
+
+        on(resetBtn, 'click', (e) => {
+            e.preventDefault();
+            navigate({clear: true});
+        });
+
+        autoSubmitNames.forEach(name => on(getEl(name), 'change', () => submitBtn?.click()));
+
+        searchSubmitNames.forEach(name => on(getEl(name), 'keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitBtn?.click();
+            }
+        }));
+    }
+
+    // === Tooltips ===
+    function initTooltip() {
+        const nodes = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
+        nodes.forEach(el => new bootstrap.Tooltip(el, {trigger: 'hover'}));
+    }
+
+    // === Boot ===
+    function boot() {
+        initTooltip();
+    }
+
+    // ===== Public API (minimal) =====
+    window.App = {
+        boot,
+        ui: {initTooltip},
+        forms: {initSubmit},
+    };
+
+    // Back-compat shims
+    window.__submit = initSubmit;
+
+    on(document, 'DOMContentLoaded', boot);
+
     window.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.alert[data-autohide="true"]').forEach(el => {
             setTimeout(() => {
@@ -38,17 +147,6 @@
                 } catch (e) {
                 }
             }, 5000);
-        });
-
-        document.querySelectorAll('form').forEach(f => {
-            f.addEventListener('submit', () => {
-                const btn = f.querySelector('button[type="submit"]');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.dataset.originalText = btn.innerHTML;
-                    btn.innerHTML = 'Submitting...';
-                }
-            });
         });
     });
 </script>

@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="container" style="max-width:420px">
-        <div class="bg-white rounded-3 shadow p-4">
+        <div class="bg-white rounded-3 shadow p-3">
             <h1 class="h4 mb-3 text-center">KYCN Admin</h1>
 
             @if (session('error'))
@@ -21,8 +21,9 @@
                     <input type="password"
                            name="password"
                            placeholder="Password"
-                           class="form-control @error('password') is-invalid @enderror"
-                           required autofocus>
+                           class="form-control form-control-sm @error('password') is-invalid @enderror"
+                           required autofocus
+                    >
                 </div>
                 <button class="btn btn-sm btn-primary w-100">Enter</button>
             </form>

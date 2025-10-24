@@ -31,30 +31,19 @@ class DealerController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
 
-        $query = Dealer::query();
+        $dealers = Dealer::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('name', 'like', "%{$q}%")
+                        ->orWhere('code', 'like', "%{$q}%");
+                });
+            })
+            ->orderByRaw("CASE WHEN name LIKE ? THEN 0 ELSE 1 END", [$q !== '' ? "{$q}%" : '%'])
+            ->orderBy('name')
+            ->paginate(50)
+            ->withQueryString();
 
-        if ($q !== '') {
-            $likeAny = '%'.$q.'%';
-            $likeStart = $q.'%';
-
-            $query->where(function ($qq) use ($likeAny) {
-                $qq->where('name', 'like', $likeAny)
-                    ->orWhere('code', 'like', $likeAny)
-                    ->orWhere('dealership_url', 'like', $likeAny);
-            });
-
-            $query->orderByRaw('CASE WHEN name LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END', [$likeStart])
-                ->orderBy('name');
-        } else {
-            $query->orderBy('name');
-        }
-
-        $dealers = $query->paginate(50)->withQueryString();
-
-        return view('admin.dealers.index', [
-            'dealers' => $dealers,
-            'q' => $q,
-        ]);
+        return view('admin.dealers.index', compact('dealers', 'q'));
     }
 
     /**

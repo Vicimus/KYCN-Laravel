@@ -10,7 +10,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-sm">
+            <table class="table kycn-table sm-table m-0">
                 <thead>
                 <tr>
                     <th>When</th>
