@@ -28,3 +28,7 @@ Route::middleware(['admin', 'admin.fresh'])->prefix('admin')->name('admin.')->gr
     Route::get('/dealers/{dealer:code}/export.csv', [ExportController::class, 'dealerCsv'])->name('dealers.export');
     Route::get('/dealers/{dealer:code}/feed.ics',   [ExportController::class, 'dealerIcs'])->name('dealers.ics');
 });
+
+// PUBLIC
+Route::get('/export/{token}.csv', [ExportController::class, 'publicDealerCsv'])->name('public.dealer.csv');
+Route::get('/calendar/{token}.ics', [ExportController::class, 'publicDealerIcs'])->name('public.dealer.ics');

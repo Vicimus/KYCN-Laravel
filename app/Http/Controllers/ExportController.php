@@ -4,253 +4,198 @@ namespace App\Http\Controllers;
 
 use App\Models\Dealer;
 use App\Models\Submission;
-use Carbon\CarbonImmutable;
-use Closure;
-use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportController extends Controller
 {
-    /**
-     * @return StreamedResponse
-     */
     public function allCsv(): StreamedResponse
     {
-        return $this->streamCsv('kycn_all_' . now()->format('Ymd_His') . '.csv', function ($push) {
-            $q = Submission::with('dealer')->orderByDesc('created_at');
-            $this->applyFilters($q);
+        $filename = 'kycn-all-' . now()->format('Ymd_His') . '.csv';
 
-            $q->chunk(100, function ($chunk) use ($push) {
-                foreach ($chunk as $s) {
-                    $push([
-                        optional($s->dealer)->name,
-                        $s->full_name,
-                        $s->email,
-                        $s->phone,
-                        (int)$s->guest_count,
-                        $s->wants_appointment ? 'Yes' : 'No',
-                        optional($s->know_your_car_date)?->format('Y-m-d'),
-                        optional($s->vehicle_purchased)?->format('Y-m-d'),
-                        $s->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
-                    ]);
-                }
-            });
-        });
-    }
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
 
-    /**
-     * @return StreamedResponse
-     */
-    public function allIcs(): StreamedResponse
-    {
-        return $this->streamIcs('kycn_all_' . now()->format('Ymd_His') . '.ics', function () {
-            $events = [];
-            $q = Submission::with('dealer')->orderByDesc('created_at');
-            $this->applyFilters($q);
-
-            $q->chunk(200, function ($chunk) use (&$events) {
-                foreach ($chunk as $s) {
-                    if (!$s->know_your_car_date) {
-                        continue;
-                    }
-                    $date = CarbonImmutable::parse($s->know_your_car_date);
-                    $events[] = [
-                        'uid' => 'kycn-' . $s->id . '@' . request()->getHost(),
-                        'summary' => 'Know Your Car Night — ' . optional($s->dealer)->name,
-                        'dtstart' => $date->format('Ymd'),
-                        'dtend' => $date->addDay()->format('Ymd'),
-                        'description' => $s->full_name . ' • ' . ($s->email ?: '') . ' • ' . ($s->phone ?: ''),
-                        'location' => optional($s->dealer)->name,
-                    ];
-                }
-            });
-
-            return $events;
-        });
-    }
-
-    /**
-     * @param Dealer $dealer
-     *
-     * @return StreamedResponse
-     */
-    public function dealerCsv(Dealer $dealer): StreamedResponse
-    {
-        return $this->streamCsv(
-            'kycn_' . $dealer->code . '_' . now()->format('Ymd_His') . '.csv',
-            function ($push) use ($dealer) {
-                $q = Submission::where('dealer_id', $dealer->id)->orderByDesc('created_at');
-                $this->applyFilters($q);
-
-                $q->chunk(100, function ($chunk) use ($dealer, $push) {
-                    foreach ($chunk as $s) {
-                        $push([
-                            $dealer->name,
-                            $s->full_name,
-                            $s->email,
-                            $s->phone,
-                            (int)$s->guest_count,
-                            $s->wants_appointment ? 'Yes' : 'No',
-                            optional($s->know_your_car_date)?->format('Y-m-d'),
-                            optional($s->vehicle_purchased)?->format('Y-m-d'),
-                            $s->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+            Submission::with('dealer')
+                ->orderBy('created_at', 'asc')
+                ->chunk(500, function ($chunk) use ($out) {
+                    foreach ($chunk as $r) {
+                        fputcsv($out, [
+                            $r->id,
+                            optional($r->created_at)->format('Y-m-d H:i:s'),
+                            optional($r->dealer)->name,
+                            $r->event_id,
+                            $r->full_name,
+                            $r->email,
+                            $r->phone,
+                            (int)$r->guest_count,
+                            $r->wants_appointment ? 1 : 0,
+                            optional($r->know_your_car_date)->format('Y-m-d'),
+                            optional($r->vehicle_purchased)->format('Y-m-d'),
+                            $r->notes,
                         ]);
                     }
                 });
-            }
-        );
-    }
-
-    /**
-     * @param Dealer $dealer
-     *
-     * @return StreamedResponse
-     */
-    public function dealerIcs(Dealer $dealer): StreamedResponse
-    {
-        return $this->streamIcs('kycn_' . $dealer->code . '_' . now()->format('Ymd_His') . '.ics', function () use ($dealer) {
-            $events = [];
-            $q = Submission::where('dealer_id', $dealer->id)->orderByDesc('created_at');
-            $this->applyFilters($q);
-
-            $q->chunk(200, function ($chunk) use (&$events, $dealer) {
-                foreach ($chunk as $s) {
-                    if (!$s->know_your_car_date) {
-                        continue;
-                    }
-                    $date = CarbonImmutable::parse($s->know_your_car_date);
-                    $events[] = [
-                        'uid' => 'kycn-' . $s->id . '@' . request()->getHost(),
-                        'summary' => 'Know Your Car Night — ' . $dealer->name,
-                        'dtstart' => $date->format('Ymd'),
-                        'dtend' => $date->addDay()->format('Ymd'),
-                        'description' => $s->full_name . ' • ' . ($s->email ?: '') . ' • ' . ($s->phone ?: ''),
-                        'location' => $dealer->name,
-                    ];
-                }
-            });
-
-            return $events;
-        });
-    }
-
-    /**
-     * @param Builder $q
-     *
-     * @return Builder
-     */
-    protected function applyFilters(Builder $q): Builder
-    {
-        if ($from = request('from')) {
-            $q->whereDate('created_at', '>=', $from);
-        }
-
-        if ($to = request('to')) {
-            $q->whereDate('created_at', '<=', $to);
-        }
-
-        if ($term = trim((string)request('q'))) {
-            $q->where(function ($qq) use ($term) {
-                $qq->where('full_name', 'like', "%$term%")
-                    ->orWhere('email', 'like', "%$term%")
-                    ->orWhere('phone', 'like', "%$term%")
-                    ->orWhereHas('dealer', fn($dq) => $dq->where('name', 'like', "%$term%"));
-            });
-        }
-
-        return $q;
-    }
-
-    /**
-     * @param string $s
-     *
-     * @return string
-     */
-    protected static function icsEscape(string $s): string
-    {
-        return str_replace(
-            ["\\", ";", ",", "\n", "\r"],
-            ["\\\\", "\;", "\,", "\\n", ""],
-            $s,
-        );
-    }
-
-    /**
-     * @param string  $filename
-     * @param Closure $writer
-     *
-     * @return StreamedResponse
-     */
-    protected function streamCsv(string $filename, Closure $writer): StreamedResponse
-    {
-        return response()->streamDownload(function () use ($writer) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, [
-                'Dealer',
-                'Full Name',
-                'Email',
-                'Phone',
-                'Guests',
-                'Wants Appointment',
-                'KYCN Date',
-                'Vehicle Purchased',
-                'Created At',
-            ]);
-
-            $writer(function (array $row) use ($out) {
-                fputcsv($out, $row);
-            });
 
             fclose($out);
         }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=utf-8',
         ]);
     }
 
-    /**
-     * @param string  $filename
-     * @param Closure $yieldEvents
-     *
-     * @return StreamedResponse
-     */
-    protected function streamIcs(string $filename, Closure $yieldEvents): StreamedResponse
+    // ====== ADMIN: all dealers ICS ======
+    public function allIcs()
     {
-        return response()->streamDownload(function () use ($yieldEvents) {
+        $subs = Submission::query()
+            ->whereNotNull('know_your_car_date')
+            ->with('dealer')
+            ->orderBy('know_your_car_date', 'asc')
+            ->get();
+
+        return $this->icsResponse('KYCN-All.ics', $subs);
+    }
+
+    // ====== ADMIN: per-dealer CSV ======
+    public function dealerCsv(Dealer $dealer): StreamedResponse
+    {
+        $filename = 'kycn-' . $dealer->code . '-' . now()->format('Ymd_His') . '.csv';
+        $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
+
+        return response()->streamDownload(function () use ($subs, $dealer) {
             $out = fopen('php://output', 'w');
-            $write = fn($l) => fwrite($out, $l . "\r\n");
-
-            $write('BEGIN:VCALENDAR');
-            $write('VERSION:2.0');
-            $write('PRODID:-//KYCN//Bumper//EN');
-            $write("CALSCALE:GREGORIAN");
-            $write("METHOD:PUBLISH");
-
-            foreach ($yieldEvents() as $ev) {
-                $write('BEGIN:VEVENT');
-                $write('UID:' . $ev['uid']);
-                $write('DTSTAMP:' . now()->setTimezone('UTC')->format('Ymd\THis\Z'));
-                $write('SUMMARY:' . self::icsEscape($ev['summary']));
-                $write('DTSTART;VALUE=DATE:' . $ev['dtstart']);
-
-                if (!empty($ev['dtend'])) {
-                    $write('DTEND;VALUE=DATE:' . $ev['dtend']);
-                }
-
-                if (!empty($ev['description'])) {
-                    $write('DESCRIPTION:' . self::icsEscape($ev['description']));
-                }
-
-                if (!empty($ev['location'])) {
-                    $write('LOCATION:' . self::icsEscape($ev['location']));
-                }
-
-                $write('END:VEVENT');
+            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
+            foreach ($subs as $r) {
+                fputcsv($out, [
+                    $r->id,
+                    optional($r->created_at)->format('Y-m-d H:i:s'),
+                    $dealer->name,
+                    $r->event_id,
+                    $r->full_name,
+                    $r->email,
+                    $r->phone,
+                    (int)$r->guest_count,
+                    $r->wants_appointment ? 1 : 0,
+                    optional($r->know_your_car_date)->format('Y-m-d'),
+                    optional($r->vehicle_purchased)->format('Y-m-d'),
+                    $r->notes,
+                ]);
             }
-
-            $write('END:VCALENDAR');
             fclose($out);
         }, $filename, [
-            'Content-Type' => 'text/calendar; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=utf-8',
         ]);
+    }
+
+    // ====== ADMIN: per-dealer ICS ======
+    public function dealerIcs(Dealer $dealer)
+    {
+        $subs = $dealer->submissions()
+            ->whereNotNull('know_your_car_date')
+            ->orderBy('know_your_car_date', 'asc')
+            ->get();
+
+        $fname = 'KYCN-' . $dealer->code . '.ics';
+        return $this->icsResponse($fname, $subs, $dealer);
+    }
+
+    // ====== PUBLIC: token CSV ======
+    public function publicDealerCsv(string $token): StreamedResponse
+    {
+        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
+        $filename = 'kycn-' . $dealer->code . '-' . now()->format('Ymd_His') . '.csv';
+        $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
+
+        return response()->streamDownload(function () use ($subs, $dealer) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
+            foreach ($subs as $r) {
+                fputcsv($out, [
+                    $r->id,
+                    optional($r->created_at)->format('Y-m-d H:i:s'),
+                    $dealer->name,
+                    $r->event_id,
+                    $r->full_name,
+                    $r->email,
+                    $r->phone,
+                    (int)$r->guest_count,
+                    $r->wants_appointment ? 1 : 0,
+                    optional($r->know_your_car_date)->format('Y-m-d'),
+                    optional($r->vehicle_purchased)->format('Y-m-d'),
+                    $r->notes,
+                ]);
+            }
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+        ]);
+    }
+
+    // ====== PUBLIC: token ICS ======
+    public function publicDealerIcs(string $token)
+    {
+        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
+        $subs = $dealer->submissions()
+            ->whereNotNull('know_your_car_date')
+            ->orderBy('know_your_car_date', 'asc')
+            ->get();
+
+        $fname = 'KYCN-' . $dealer->code . '.ics';
+        return $this->icsResponse($fname, $subs, $dealer);
+    }
+
+    // ================== Helpers ==================
+
+    /**
+     * Build an ICS response from submissions that have know_your_car_date.
+     * Event time window: 6:00 PM–7:00 PM local server time (customize as needed).
+     */
+    protected function icsResponse(string $filename, $submissions, ?Dealer $dealer = null)
+    {
+        $lines = [];
+        $lines[] = 'BEGIN:VCALENDAR';
+        $lines[] = 'VERSION:2.0';
+        $lines[] = 'PRODID:-//KYCN//Dashboard//EN';
+        $lines[] = 'CALSCALE:GREGORIAN';
+        $lines[] = 'METHOD:PUBLISH';
+
+        foreach ($submissions as $s) {
+            if (!$s->know_your_car_date) {
+                continue;
+            }
+
+            $date = Carbon::parse($s->know_your_car_date); // date only
+            $start = $date->copy()->setTime(18, 0, 0); // 6:00 PM
+            $end = $date->copy()->setTime(19, 0, 0); // 7:00 PM
+
+            $uid = 'kycn-' . $s->id . '@' . parse_url(config('app.url'), PHP_URL_HOST);
+            $summary = ($dealer?->name ?: optional($s->dealer)->name ?: 'Know Your Car Night') . ' — ' . $s->full_name;
+
+            $lines[] = 'BEGIN:VEVENT';
+            $lines[] = 'UID:' . $uid;
+            $lines[] = 'DTSTAMP:' . now()->utc()->format('Ymd\THis\Z');
+            $lines[] = 'DTSTART:' . $start->format('Ymd\THis');
+            $lines[] = 'DTEND:' . $end->format('Ymd\THis');
+            $lines[] = 'SUMMARY:' . $this->icsEscape($summary);
+            if ($s->notes) {
+                $lines[] = 'DESCRIPTION:' . $this->icsEscape($s->notes);
+            }
+            $lines[] = 'END:VEVENT';
+        }
+
+        $lines[] = 'END:VCALENDAR';
+        $body = implode("\r\n", $lines) . "\r\n";
+
+        return response($body, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+
+    protected function icsEscape(string $text): string
+    {
+        // Basic ICS escaping
+        $text = str_replace(["\\", ";", ",", "\n"], ["\\\\", "\;", "\,", "\\n"], $text);
+        return $text;
     }
 }

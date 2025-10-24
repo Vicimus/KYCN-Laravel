@@ -71,7 +71,11 @@
                     </thead>
                     <tbody>
                     @foreach($dealers as $d)
-                        @php $url = url('/?d='.$d->code); @endphp
+                        @php
+                            $url = url('/?d='.$d->code);
+                            $csvPublic = route('public.dealer.csv', $d->portal_token);
+                            $icsPublic = route('public.dealer.ics', $d->portal_token);
+                        @endphp
                         <tr>
                             <td>
                                 <a href="{{ route('admin.dealers.show', $d) }}"
@@ -114,7 +118,7 @@
                                     <button type="button"
                                             class="btn btn-sm btn-outline-secondary"
                                             data-copy-url="{{ $url }}"
-                                            title="Copy URL"
+                                            title="Copy Dealer URL"
                                     >
                                         <i class="far fa-copy"></i>
                                     </button>

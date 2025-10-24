@@ -23,4 +23,13 @@ class Dealer extends Model
     {
         return $this->hasMany(Submission::class);
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($dealer) {
+            if (!$dealer->portal_token) {
+                $dealer->portal_token = bin2hex(random_bytes(16));
+            }
+        });
+    }
 }
