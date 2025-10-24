@@ -138,7 +138,7 @@
     on(document, 'DOMContentLoaded', boot);
 
     window.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.alert[data-autohide="true"]').forEach(el => {
+        document.querySelectorAll('[data-autohide="true"]').forEach(el => {
             setTimeout(() => {
                 const alert = new bootstrap.Alert(el);
                 try {

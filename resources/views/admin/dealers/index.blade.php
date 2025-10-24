@@ -11,31 +11,48 @@
         <div class="p-3 d-flex justify-content-between flex-column flex-lg-row gap-3 w-100">
             <div class="fw-bold">View Dealerships</div>
 
-            <div class="d-flex flex-column gap-1">
-                <div class="d-flex align-items-end gap-2">
-                    <input type="text" class="form-control form-control-sm"
-                           name="q" value="{{ $q }}" placeholder="Search dealers...">
-                    <div class="btn-group" role="group">
-                        <button id="page-submit-button"
-                                class="btn btn-sm btn-primary"
-                                title="Apply Filters"
-                        >
-                            <i class="fas fa-filter"></i>
-                        </button>
-                        <button id="page-reset-button"
-                                class="btn btn-sm btn-outline-secondary"
-                                title="Clear"
-                        >
-                            <i class="fas fa-rotate-left"></i>
-                        </button>
+            <div class="d-flex">
+                <div class="d-flex flex-column gap-1">
+                    <div class="d-flex align-items-end gap-2">
+                        <input type="text" class="form-control form-control-sm"
+                               name="q" value="{{ $q }}" placeholder="Search dealers...">
+                        <div class="btn-group" role="group">
+                            <button id="page-submit-button"
+                                    class="btn btn-sm btn-primary"
+                                    title="Apply Filters"
+                            >
+                                <i class="fas fa-filter"></i>
+                            </button>
+                            <button id="page-reset-button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    title="Clear"
+                            >
+                                <i class="fas fa-rotate-left"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    @if(!empty($q))
+                        <div class="text-secondary fs-md text-end">
+                            Showing {{ $dealers->total() }} result(s) for “{{ $q }}”
+                        </div>
+                    @endif
                 </div>
 
-                @if(!empty($q))
-                    <div class="text-secondary fs-md text-end">
-                        Showing {{ $dealers->total() }} result(s) for “{{ $q }}”
-                    </div>
-                @endif
+                <div class="btn-group ps-2 ms-2 border-start rounded-0" role="group">
+                    <a href="{{ route('admin.export.all.csv', request()->query()) }}"
+                       class="btn btn-sm btn-outline-primary"
+                       title="Export CSV (All)"
+                    >
+                        <i class="fas fa-file-lines"></i>
+                    </a>
+                    <a href="{{ route('admin.export.all.ics', request()->query()) }}"
+                       class="btn btn-sm btn-outline-primary"
+                       title="Add to Calendar (All)"
+                    >
+                        <i class="fas fa-calendar-plus"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -49,7 +66,7 @@
                         <th>URL</th>
                         <th>Created</th>
                         <th>Updated</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -71,9 +88,7 @@
                                 />
                             </td>
                             <td class="text-break">
-                                <a href="{{ $url }}"
-                                   class="text-decoration-none fw-bold"
-                                >
+                                <a href="{{ $url }}" class="text-decoration-none fw-bold">
                                     {{ Str::limit($url, 40) }}
                                 </a>
                             </td>
@@ -87,7 +102,14 @@
                                     {{ $d->updated_at?->format('F jS, Y • g:i A') }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="text-end">
+                                <a href="{{ route('admin.dealers.edit', $d) }}"
+                                   class="btn btn-sm btn-outline-secondary me-3"
+                                   title="Edit {{ $d->name }}"
+                                >
+                                    <i class="fas fa-user-pen"></i>
+                                </a>
+
                                 <div class="btn-group" role="group">
                                     <button type="button"
                                             class="btn btn-sm btn-outline-secondary"
@@ -96,11 +118,17 @@
                                     >
                                         <i class="far fa-copy"></i>
                                     </button>
-                                    <a href="{{ route('admin.dealers.edit', $d) }}"
+                                    <a href="{{ route('admin.dealers.export', $d) }}"
                                        class="btn btn-sm btn-outline-secondary"
-                                       title="Edit {{ $d->name }}"
+                                       title="Export CSV"
                                     >
-                                        <i class="fas fa-user-pen"></i>
+                                        <i class="fas fa-file-lines"></i>
+                                    </a>
+                                    <a href="{{ route('admin.dealers.ics', $d) }}"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Add to Calendar"
+                                    >
+                                        <i class="fas fa-calendar-plus"></i>
                                     </a>
                                 </div>
                             </td>

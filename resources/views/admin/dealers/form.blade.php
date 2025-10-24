@@ -12,7 +12,7 @@
 @section('title', $title)
 
 @section('content')
-    <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100">
+    <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 set-max-width">
         <div class="p-3">
             <div class="fw-bold">{{ $title }}</div>
         </div>

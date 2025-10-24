@@ -11,7 +11,7 @@
 @endphp
 
 <nav class="navbar navbar-light bg-light border-bottom">
-    <div class="container-fluid">
+    <div class="container py-0 px-3">
         <div class="d-flex align-items-center gap-2">
             <a class="text-decoration-none text-dark fw-bold"
                href="{{ $isAdmin ? route('admin.dealers.index') : route('public.form') }}"
@@ -25,7 +25,7 @@
         <div class="ms-auto d-flex align-items-center">
             @if(!$onPublicForm)
                 <div class="btn-group pe-2 me-2 border-end rounded-0" role="group">
-                    <a class="btn btn-sm btn-primary" href="{{ route('public.form') }}" title="New Register">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ route('public.form') }}" title="New Register">
                         <i class="fas fa-rectangle-list"></i>
                     </a>
                 </div>

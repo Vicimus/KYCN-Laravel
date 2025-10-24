@@ -4,11 +4,28 @@
 
 @section('content')
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
-        <div class="p-3 d-flex align-items-center gap-3">
-            @if($dealer->dealership_logo)
-                <img src="{{ $dealer->dealership_logo }}" class="table-dealer-logo" alt="{{ $dealer->name }} Logo"/>
-            @endif
-            <div class="fw-bold">{{ $dealer->name }}</div>
+        <div class="d-flex justify-content-between p-3 gap-3">
+            <div class="d-flex align-items-center gap-3">
+                @if($dealer->dealership_logo)
+                    <img src="{{ $dealer->dealership_logo }}" class="table-dealer-logo" alt="{{ $dealer->name }} Logo"/>
+                @endif
+                <div class="fw-bold">{{ $dealer->name }}</div>
+            </div>
+
+            <div class="btn-group" role="group">
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ route('admin.dealers.export', $dealer) }}"
+                   title="Export CSV"
+                >
+                    <i class="fas fa-file-lines"></i>
+                </a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ route('admin.dealers.ics', $dealer) }}"
+                   title="Add to Calendar"
+                >
+                    <i class="fas fa-calendar-plus"></i>
+                </a>
+            </div>
         </div>
 
         @if($rows->count() > 0)
