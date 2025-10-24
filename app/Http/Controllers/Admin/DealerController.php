@@ -19,7 +19,12 @@ class DealerController extends Controller
      */
     public function create(): View
     {
-        return view('admin.dealers.create');
+        $dealer = new Dealer();
+
+        return view('admin.dealers.form', [
+            'dealer' => $dealer,
+            'mode' => 'create',
+        ]);
     }
 
     /**
@@ -53,7 +58,10 @@ class DealerController extends Controller
      */
     public function edit(Dealer $dealer): View
     {
-        return view('admin.dealers.edit', compact('dealer'));
+        return view('admin.dealers.form', [
+            'dealer' => $dealer,
+            'mode' => 'edit',
+        ]);
     }
 
     /**

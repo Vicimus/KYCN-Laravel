@@ -4,6 +4,8 @@
 
 @extends('layouts.app')
 
+@section('title', 'Dealerships')
+
 @section('content')
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
         <div class="p-3 d-flex justify-content-between flex-column flex-lg-row gap-3 w-100">
