@@ -79,12 +79,12 @@
                             </td>
                             <td>
                                 <span class="fs-md text-secondary">
-                                    {{ $d->created_at?->format('F jS, Y \a\t g:i A') }}
+                                    {{ $d->created_at?->format('F jS, Y • g:i A') }}
                                 </span>
                             </td>
                             <td>
                                 <span class="fs-md text-secondary">
-                                    {{ $d->updated_at?->format('F jS, Y \a\t g:i A') }}
+                                    {{ $d->updated_at?->format('F jS, Y • g:i A') }}
                                 </span>
                             </td>
                             <td>

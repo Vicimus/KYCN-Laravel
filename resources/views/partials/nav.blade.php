@@ -6,6 +6,7 @@
     $onDealerView = !$onPublicForm && $onAdminIndex;
     $onDealerCreate = request()->routeIs('admin.dealers.create');
     $onDealerEdit = request()->routeIs('admin.dealers.edit');
+    $onDealerShow = request()->routeIs('admin.dealers.show');
     $showBackToList = $isAdmin && $onAdminAny && !$onAdminIndex;
 @endphp
 
@@ -33,7 +34,7 @@
             @if ($isAdmin)
                 <div class="d-flex">
                     <div class="btn-group pe-2 me-2 border-end rounded-0" role="group">
-                        @if ((!$onAdminIndex && !$showBackToList) || ($onDealerCreate || $onDealerEdit))
+                        @if ((!$onAdminIndex && !$showBackToList) || ($onDealerCreate || $onDealerEdit || $onDealerShow))
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ route('admin.dealers.index') }}"
                                title="Go to Dealers"
