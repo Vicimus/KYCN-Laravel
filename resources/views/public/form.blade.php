@@ -97,8 +97,12 @@
                 </div>
 
                 <div class="d-flex justify-content-between mt-3">
-                    <button class="btn btn-sm btn-secondary" type="reset">Reset</button>
-                    <button class="btn btn-sm btn-primary" type="submit">Submit</button>
+                    <button class="btn btn-sm btn-secondary" type="reset" title="Clear Form">
+                        <i class="fas fa-rotate-left"></i>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="submit" title="Submit Form">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </form>
         </div>

@@ -1,6 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
-@section('admin')
+@section('content')
     <div class="container-fluid py-3">
         <div class="d-flex align-items-center gap-3 mb-3">
             @if($dealer->dealership_logo)

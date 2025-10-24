@@ -23,7 +23,6 @@
 @include('partials.nav')
 
 <main class="container">
-    @include('partials.flash')
     @yield('content')
 </main>
 

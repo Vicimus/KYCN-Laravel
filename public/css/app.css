@@ -45,6 +45,16 @@ body > .container {
     --bs-list-group-active-border-color: var(--vicimus-blue);
 }
 
+.btn:not(.btn-sm) {
+    min-height: 37px;
+    min-width: 43px;
+}
+
+.btn.btn-sm {
+    min-height: 31px;
+    min-width: 31px;
+}
+
 .btn-primary {
     --bs-btn-border-color: var(--vicimus-blue);
     --bs-btn-hover-border-color: var(--vicimus-blue);
