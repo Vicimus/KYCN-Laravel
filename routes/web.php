@@ -25,8 +25,9 @@ Route::middleware(['admin', 'admin.fresh'])->prefix('admin')->name('admin.')->gr
     Route::get('/dealers/{dealer:code}', [DealerController::class, 'show'])->name('dealers.show');
     Route::get('/dealers/{dealer:code}/edit', [DealerController::class,'edit'])->name('dealers.edit');
     Route::put('/dealers/{dealer:code}', [DealerController::class,'update'])->name('dealers.update');
-    Route::get('/dealers/{dealer:code}/export.csv', [ExportController::class, 'dealerCsv'])->name('dealers.export');
-    Route::get('/dealers/{dealer:code}/feed.ics',   [ExportController::class, 'dealerIcs'])->name('dealers.ics');
+
+    Route::get('/dealers/{dealer:portal_token}/export.csv', [ExportController::class, 'dealerCsv'])->name('dealers.export');
+    Route::get('/dealers/{dealer:portal_token}/feed.ics',   [ExportController::class, 'dealerIcs'])->name('dealers.ics');
 });
 
 // PUBLIC

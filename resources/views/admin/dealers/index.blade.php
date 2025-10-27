@@ -73,8 +73,6 @@
                     @foreach($dealers as $d)
                         @php
                             $url = url('/?d='.$d->code);
-                            $csvPublic = route('public.dealer.csv', $d->portal_token);
-                            $icsPublic = route('public.dealer.ics', $d->portal_token);
                         @endphp
                         <tr>
                             <td>
@@ -122,13 +120,13 @@
                                     >
                                         <i class="far fa-copy"></i>
                                     </button>
-                                    <a href="{{ route('admin.dealers.export', $d) }}"
+                                    <a href="{{ route('admin.dealers.export', ['dealer' => $d->portal_token]) }}"
                                        class="btn btn-sm btn-outline-secondary"
                                        title="Export CSV"
                                     >
                                         <i class="fas fa-file-lines"></i>
                                     </a>
-                                    <a href="{{ route('admin.dealers.ics', $d) }}"
+                                    <a href="{{ route('admin.dealers.ics', ['dealer' => $d->portal_token]) }}"
                                        class="btn btn-sm btn-outline-secondary"
                                        title="Add to Calendar"
                                     >

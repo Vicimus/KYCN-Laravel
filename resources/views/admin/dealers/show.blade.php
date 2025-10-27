@@ -14,13 +14,13 @@
 
             <div class="btn-group" role="group">
                 <a class="btn btn-sm btn-outline-primary"
-                   href="{{ route('admin.dealers.export', $dealer) }}"
+                   href="{{ route('admin.dealers.export', ['dealer' => $dealer->portal_token]) }}"
                    title="Export CSV"
                 >
                     <i class="fas fa-file-lines"></i>
                 </a>
                 <a class="btn btn-sm btn-outline-primary"
-                   href="{{ route('admin.dealers.ics', $dealer) }}"
+                   href="{{ route('admin.dealers.ics', ['dealer' => $dealer->portal_token]) }}"
                    title="Add to Calendar"
                 >
                     <i class="fas fa-calendar-plus"></i>

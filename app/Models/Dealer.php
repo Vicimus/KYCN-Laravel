@@ -31,5 +31,11 @@ class Dealer extends Model
                 $dealer->portal_token = bin2hex(random_bytes(16));
             }
         });
+
+        static::saving(function (Dealer $dealer) {
+            if (empty($dealer->portal_token)) {
+                $dealer->portal_token = hash_hmac('sha256', (string) $dealer->code, config('app.key'));
+            }
+        });
     }
 }
