@@ -37,8 +37,8 @@
             @if($isEdit)
                 <div class="mb-3">
                     <span class="fs-md d-block mb-1">Current Logo</span>
-                    @if($dealer->dealership_logo)
-                        <img src="{{ $dealer->dealership_logo }}"
+                    @if($dealer->dealership_logo_url)
+                        <img src="{{ $dealer->dealership_logo_url }}"
                              alt="{{ $dealer->name }} Logo"
                              class="dealer-form-logo"
                         />
@@ -72,8 +72,21 @@
                            id="logo_upload_src"
                            class="form-control form-control-sm"
                            placeholder="https://..."
-                           value="{{ old('dealership_logo') }}">
+                           value="{{ old('dealership_logo', $dealer->dealership_logo) }}">
                     @error('dealership_logo')
+                    <div class="text-danger fs-md">{{ $message }}</div> @enderror
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <label for="kyc_date" class="fs-md">Know Your Car Night Date</label>
+                    <input type="date"
+                           class="form-control form-control-sm @error('know_your_car_date') is-invalid @enderror"
+                           id="kyc_date"
+                           name="know_your_car_date"
+                           value="{{ old('know_your_car_date', optional($dealer->know_your_car_date)->format('Y-m-d')) }}">
+                    @error('know_your_car_date')
                     <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>
             </div>

@@ -3,9 +3,16 @@
 @section('title', 'New Registration')
 
 @section('content')
+    @if (session('success') && !$errors->any())
+        <div class="alert alert-success shadow-sm py-4 px-4 mb-4 text-center set-max-width">
+            <div class="fs-4 fw-bold text-uppercase">Registration Received</div>
+            <div class="fs-6 mt-1">Thanks! We’ll be in touch with the details shortly.</div>
+        </div>
+    @endif
+
     <div class="card shadow-sm set-max-width">
         <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-1">
                 <img src="{{ $logo }}"
                      alt="{{ $dealer?->name ?? 'Dealership' }} logo"
                      style="height: 42px"
@@ -13,6 +20,11 @@
                      referrerpolicy="no-referrer"/>
                 <h3 class="m-0">Know Your Car Night</h3>
             </div>
+            @if($dealer?->know_your_car_date)
+                <div class="text-end fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 0.05em; font-size: 0.95rem;">
+                    {{ $dealer->know_your_car_date->format('l, F jS, Y') }}
+                </div>
+            @endif
 
             <form id="kycnForm" method="post" action="{{ route('public.form.store', request()->query()) }}">
                 @csrf
@@ -84,11 +96,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="fs-md" for="kyc_date">Know Your Car Night Date</label>
-                        <input id="kyc_date" name="know_your_car_date" type="date" class="form-control form-control-sm"
-                               value="{{ old('know_your_car_date') }}">
-                    </div>
-                    <div class="col-md-6">
                         <label class="fs-md" for="vehicle_purchased">Vehicle Purchased</label>
                         <input id="vehicle_purchased" name="vehicle_purchased" type="date"
                                class="form-control form-control-sm"
@@ -96,12 +103,9 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mt-3">
-                    <button class="btn btn-sm btn-secondary" type="reset" title="Clear Form">
-                        <i class="fas fa-rotate-left"></i>
-                    </button>
-                    <button class="btn btn-sm btn-primary" type="submit" title="Submit Form">
-                        <i class="fas fa-paper-plane"></i>
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary px-4 py-2 fw-bold text-uppercase" type="submit" title="RSVP">
+                        RSVP
                     </button>
                 </div>
             </form>

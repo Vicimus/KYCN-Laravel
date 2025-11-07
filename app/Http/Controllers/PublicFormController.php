@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dealer;
 use App\Models\Submission;
+use App\Services\SubmissionNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -46,7 +47,6 @@ class PublicFormController extends Controller
             'number_of_attendees' => 'required|in:1,2',
             'email' => 'required|email',
             'phone' => 'required|string|max:30',
-            'know_your_car_date' => 'nullable|date',
             'vehicle_purchased' => 'nullable|date',
         ]);
 
@@ -72,30 +72,50 @@ class PublicFormController extends Controller
         }
 
         $notes = [];
-        if (!empty($data['know_your_car_date'])) {
-            $notes[] = 'KYCN Date: ' . date('M jS, Y', strtotime($data['know_your_car_date']));
+        $dealerKycnDate = $dealer?->know_your_car_date;
+        if ($dealerKycnDate) {
+            $notes[] = 'KYCN Date: ' . $dealerKycnDate->format('M jS, Y');
         }
-
         if (!empty($data['vehicle_purchased'])) {
             $notes[] = 'Vehicle Purchased: ' . date('M jS, Y', strtotime($data['vehicle_purchased']));
         }
         $notesText = implode("\n", $notes);
 
-        Submission::create([
-            'dealer_id' => $dealer?->id,
-            'event_id' => null,
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'full_name' => trim($data['first_name'].' '.$data['last_name']),
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'guest_count' => (int) $data['number_of_attendees'],
-            'wants_appointment' => 0,
-            'know_your_car_date' => $data['know_your_car_date'] ?? null,
-            'vehicle_purchased' => $data['vehicle_purchased'] ?? null,
-            'notes' => $notesText,
-            'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),
-        ]);
+        try {
+            $submission = Submission::create([
+                'dealer_id' => $dealer?->id,
+                'event_id' => null,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'full_name' => trim($data['first_name'].' '.$data['last_name']),
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'guest_count' => (int) $data['number_of_attendees'],
+                'wants_appointment' => 0,
+                'know_your_car_date' => $dealerKycnDate?->toDateString(),
+                'vehicle_purchased' => $data['vehicle_purchased'] ?? null,
+                'notes' => $notesText,
+                'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),
+            ]);
+        } catch (\Throwable $e) {
+            SubmissionNotifier::notifyFailure([
+                'source' => 'public.form.store',
+                'input' => $request->except(['_token']),
+                'dealer_id' => $dealer?->id,
+            ], $e);
+
+            throw $e;
+        }
+
+        try {
+            SubmissionNotifier::notifySuccess($submission);
+        } catch (\Throwable $e) {
+            SubmissionNotifier::notifyFailure([
+                'source' => 'public.form.store',
+                'submission_id' => $submission->id,
+                'dealer_id' => $submission->dealer_id,
+            ], $e);
+        }
 
         return redirect()
             ->route('public.form', $qs)

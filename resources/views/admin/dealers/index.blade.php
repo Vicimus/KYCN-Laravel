@@ -84,7 +84,7 @@
                                 </a>
                             </td>
                             <td>
-                                <img src="{{ $d->dealership_logo ?: asset('images/placeholder.png') }}"
+                                <img src="{{ $d->dealership_logo_url ?? asset('images/placeholder.png') }}"
                                      alt="{{ $d->name }} logo"
                                      class="table-dealer-logo"
                                 />

@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Dealer;
 use App\Models\Submission;
+use App\Services\SubmissionNotifier;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Random\RandomException;
@@ -60,7 +60,6 @@ class SubmissionController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:50',
             'number_of_attendees' => 'required|integer|min:1|max:10',
-            'know_your_car_date' => 'nullable|date',
             'vehicle_purchased' => 'nullable|date',
             'd' => 'nullable|string|max:255',
         ]);
@@ -93,47 +92,48 @@ class SubmissionController extends Controller
         };
 
         $notesParts = [];
-        if (!empty($validated['know_your_car_date'])) {
-            $notesParts[] = 'KYCN Date: ' . $prettyDate($validated['know_your_car_date']);
+        $dealerKycnDate = $dealer->know_your_car_date;
+        if ($dealerKycnDate) {
+            $notesParts[] = 'KYCN Date: ' . $prettyDate($dealerKycnDate->toDateString());
         }
         if (!empty($validated['vehicle_purchased'])) {
             $notesParts[] = 'Vehicle Purchased: ' . $prettyDate($validated['vehicle_purchased']);
         }
         $notes = implode("\n", $notesParts);
 
-        $submission = Submission::create([
-            'dealer_id' => $dealer->id,
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'full_name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'guest_count' => (int) $validated['number_of_attendees'],
-            'wants_appointment' => false,
-            'know_your_car_date' => $validated['know_your_car_date'] ?? null,
-            'vehicle_purchased' => $validated['vehicle_purchased'] ?? null,
-            'notes' => $notes,
-            'meta_json' => $request->except(['_token']),
-        ]);
+        try {
+            $submission = Submission::create([
+                'dealer_id' => $dealer->id,
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'full_name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'guest_count' => (int) $validated['number_of_attendees'],
+                'wants_appointment' => false,
+                'know_your_car_date' => $dealerKycnDate?->toDateString(),
+                'vehicle_purchased' => $validated['vehicle_purchased'] ?? null,
+                'notes' => $notes,
+                'meta_json' => $request->except(['_token']),
+            ]);
+        } catch (\Throwable $e) {
+            SubmissionNotifier::notifyFailure([
+                'source' => 'admin.submissions.store',
+                'input' => $request->except(['_token']),
+                'dealer_id' => $dealer->id ?? null,
+            ], $e);
+
+            throw $e;
+        }
 
         try {
-            Mail::raw(
-                "New KYCN Registration\n\n" .
-                "Dealer: {$dealer->name}\n" .
-                "Name:   {$submission->full_name}\n" .
-                "Email:  {$submission->email}\n" .
-                "Phone:  {$submission->phone}\n" .
-                "Guests: {$submission->guest_count}\n" .
-                ($submission->know_your_car_date ? "KYCN Date: " . $prettyDate($submission->know_your_car_date) . "\n" : "") .
-                ($submission->vehicle_purchased ? "Vehicle Purchased: " . $prettyDate($submission->vehicle_purchased) . "\n" : ""),
-                function ($m) {
-                    $m->to(['craig@vicimus.com', 'tgray@vicimus.com', 'cmachado@vicimus.com'])
-                        ->subject('New KYCN Registration');
-                }
-            );
+            SubmissionNotifier::notifySuccess($submission);
         } catch (\Throwable $e) {
-            // Non-fatal in dev; log if you want
-            // logger()->warning('Mail send failed: '.$e->getMessage());
+            SubmissionNotifier::notifyFailure([
+                'source' => 'admin.submissions.store',
+                'submission_id' => $submission->id,
+                'dealer_id' => $submission->dealer_id,
+            ], $e);
         }
 
         if ($embed) {

@@ -6,8 +6,8 @@
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
         <div class="d-flex justify-content-between p-3 gap-3">
             <div class="d-flex align-items-center gap-3">
-                @if($dealer->dealership_logo)
-                    <img src="{{ $dealer->dealership_logo }}" class="table-dealer-logo" alt="{{ $dealer->name }} Logo"/>
+                @if($dealer->dealership_logo_url)
+                    <img src="{{ $dealer->dealership_logo_url }}" class="table-dealer-logo" alt="{{ $dealer->name }} Logo"/>
                 @endif
                 <div class="fw-bold">{{ $dealer->name }}</div>
             </div>

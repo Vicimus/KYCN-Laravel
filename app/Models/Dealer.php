@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Dealer extends Model
 {
@@ -13,6 +14,11 @@ class Dealer extends Model
         'portal_token',
         'dealership_logo',
         'dealership_url',
+        'know_your_car_date',
+    ];
+
+    protected $casts = [
+        'know_your_car_date' => 'date',
     ];
 
 
@@ -22,6 +28,24 @@ class Dealer extends Model
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class);
+    }
+
+    /**
+     * Resolve a web-friendly logo URL regardless of storage location.
+     */
+    public function getDealershipLogoUrlAttribute(): ?string
+    {
+        $logo = $this->dealership_logo;
+
+        if (empty($logo)) {
+            return null;
+        }
+
+        if (Str::startsWith($logo, ['http://', 'https://', '//'])) {
+            return $logo;
+        }
+
+        return asset(ltrim($logo, '/'));
     }
 
     protected static function booted()

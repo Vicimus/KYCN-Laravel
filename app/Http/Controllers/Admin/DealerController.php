@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Dealer;
 use App\Models\Submission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -91,12 +92,12 @@ class DealerController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'dealership_logo' => ['nullable', 'url'],
             'logo_file' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
+            'know_your_car_date' => ['nullable', 'date'],
         ]);
 
         $logoPath = null;
         if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('logos', 'public');
-            $logoPath = Storage::url($path);
+            $logoPath = $this->storeLogo($request->file('logo_file'));
         } elseif (!empty($data['dealership_logo'])) {
             $logoPath = $data['dealership_logo'];
         }
@@ -111,6 +112,7 @@ class DealerController extends Controller
             'name' => $data['name'],
             'code' => $code.$suffix,
             'dealership_logo' => $logoPath,
+            'know_your_car_date' => $data['know_your_car_date'] ?? null,
         ]);
 
         return redirect()->route('admin.dealers.index')->with('success', 'Dealer created.');
@@ -129,17 +131,19 @@ class DealerController extends Controller
             'dealership_logo' => ['nullable', 'url'],
             'logo_file' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
+            'know_your_car_date' => ['nullable', 'date'],
         ]);
 
         $logo = $dealer->dealership_logo;
 
         if ($request->boolean('remove_logo')) {
+            $this->deleteLogo($logo);
             $logo = null;
         }
 
         if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('logos', 'public');
-            $logo = Storage::url($path);
+            $this->deleteLogo($logo);
+            $logo = $this->storeLogo($request->file('logo_file'));
         } elseif (!empty($data['dealership_logo'])) {
             $logo = $data['dealership_logo'];
         }
@@ -147,8 +151,45 @@ class DealerController extends Controller
         $dealer->update([
             'name' => $data['name'],
             'dealership_logo' => $logo,
+            'know_your_car_date' => $data['know_your_car_date'] ?? null,
         ]);
 
         return redirect()->route('admin.dealers.index')->with('success', 'Dealer updated.');
+    }
+
+    /**
+     * Persist the uploaded logo inside public/images so it is web-accessible.
+     */
+    private function storeLogo(UploadedFile $file): string
+    {
+        $directory = 'images/dealers';
+        $publicDirectory = public_path($directory);
+
+        if (!File::exists($publicDirectory)) {
+            File::makeDirectory($publicDirectory, 0755, true);
+        }
+
+        $extension = $file->getClientOriginalExtension();
+        $filename = Str::uuid().'.'.($extension ?: 'png');
+
+        $file->move($publicDirectory, $filename);
+
+        return '/'.$directory.'/'.$filename;
+    }
+
+    /**
+     * Remove a previously uploaded logo if it lives within the public directory.
+     */
+    private function deleteLogo(?string $path): void
+    {
+        if (empty($path) || Str::startsWith($path, ['http://', 'https://', '//'])) {
+            return;
+        }
+
+        $fullPath = public_path(ltrim($path, '/'));
+
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
     }
 }
