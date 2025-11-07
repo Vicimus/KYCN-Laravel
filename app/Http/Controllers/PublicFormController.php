@@ -13,29 +13,28 @@ use Random\RandomException;
 
 class PublicFormController extends Controller
 {
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function show(Request $request): View
     {
         $code = (string) $request->query('d', '');
         $dealer = $code !== '' ? Dealer::where('code', $code)->first() : null;
+
+        $dealerOptions = Dealer::query()
+            ->whereNotNull('know_your_car_date')
+            ->whereDate('know_your_car_date', '>=', now()->toDateString())
+            ->orderBy('know_your_car_date')
+            ->orderBy('name')
+            ->get();
 
         $logo = $dealer?->dealership_logo ?: 'https://vicimus.com/wp-content/uploads/2023/08/bumper.svg';
 
         return view('public.form', [
             'dealer' => $dealer,
             'logo' => $logo,
+            'dealerOptions' => $dealerOptions,
         ]);
     }
 
     /**
-     * @param Request $request
-     *
-     * @return RedirectResponse
-     *
      * @throws RandomException
      */
     public function store(Request $request): RedirectResponse
@@ -60,24 +59,24 @@ class PublicFormController extends Controller
             $qs['d'] = $request->query('d');
         }
 
-        if (!$dealer && !empty($data['dealership_name'])) {
+        if (! $dealer && ! empty($data['dealership_name'])) {
             $dealer = Dealer::firstOrCreate(
                 ['name' => trim($data['dealership_name'])],
-                ['code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $data['dealership_name'])) ?: 'DEALER' . random_int(1000, 9999)]
+                ['code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $data['dealership_name'])) ?: 'DEALER'.random_int(1000, 9999)]
             );
         }
 
-        if (!$dealer) {
+        if (! $dealer) {
             $dealer = Dealer::orderBy('id')->first();
         }
 
         $notes = [];
         $dealerKycnDate = $dealer?->know_your_car_date;
         if ($dealerKycnDate) {
-            $notes[] = 'KYCN Date: ' . $dealerKycnDate->format('M jS, Y');
+            $notes[] = 'KYCN Date: '.$dealerKycnDate->format('M jS, Y');
         }
-        if (!empty($data['vehicle_purchased'])) {
-            $notes[] = 'Vehicle Purchased: ' . date('M jS, Y', strtotime($data['vehicle_purchased']));
+        if (! empty($data['vehicle_purchased'])) {
+            $notes[] = 'Vehicle Purchased: '.date('M jS, Y', strtotime($data['vehicle_purchased']));
         }
         $notesText = implode("\n", $notes);
 

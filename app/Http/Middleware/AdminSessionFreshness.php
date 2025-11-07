@@ -11,7 +11,7 @@ class AdminSessionFreshness
 
     public function handle(Request $request, Closure $next)
     {
-        if (!session('is_admin')) {
+        if (! session('is_admin')) {
             return redirect()->route('admin.login.show')->with('error', 'Please sign in.');
         }
 

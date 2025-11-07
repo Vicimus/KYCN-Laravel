@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class BackfillDealerPortalTokens extends Command
 {
     protected $signature = 'dealers:backfill-portal-tokens';
+
     protected $description = 'Backfill portal_token for dealers missing one';
 
     public function handle(): int
@@ -24,6 +25,7 @@ class BackfillDealerPortalTokens extends Command
         });
 
         $this->info('Backfill complete.');
+
         return self::SUCCESS;
     }
 }

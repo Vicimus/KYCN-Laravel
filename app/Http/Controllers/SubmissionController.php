@@ -15,11 +15,6 @@ use Random\RandomException;
 
 class SubmissionController extends Controller
 {
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function create(Request $request): View
     {
         $embed = (bool) $request->boolean('embed');
@@ -29,7 +24,7 @@ class SubmissionController extends Controller
         $dealership = null;
         $prefillDealershipName = '';
 
-        if (!$fresh && $dealerCode !== '') {
+        if (! $fresh && $dealerCode !== '') {
             $dealership = Dealer::where('code', $dealerCode)->first();
             $prefillDealershipName = $dealership->name ?? '';
         }
@@ -43,10 +38,6 @@ class SubmissionController extends Controller
     }
 
     /**
-     * @param Request $request
-     *
-     * @return RedirectResponse|Response
-     *
      * @throws RandomException
      */
     public function store(Request $request): RedirectResponse|Response
@@ -65,25 +56,27 @@ class SubmissionController extends Controller
         ]);
 
         $dealer = null;
-        if (!empty($validated['d'])) {
+        if (! empty($validated['d'])) {
             $dealer = Dealer::where('code', $validated['d'])
                 ->orWhere('dealership_url', $validated['d'])
                 ->first();
         }
 
-        if (!$dealer) {
+        if (! $dealer) {
             $dealer = Dealer::where('name', $validated['dealership_name'])->first();
-            if (!$dealer) {
+            if (! $dealer) {
                 $dealer = Dealer::create([
                     'name' => $validated['dealership_name'],
-                    'code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $validated['dealership_name'])) ?: 'DEALER' . random_int(1000, 9999),
+                    'code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $validated['dealership_name'])) ?: 'DEALER'.random_int(1000, 9999),
                     'portal_token' => bin2hex(random_bytes(16)),
                 ]);
             }
         }
 
         $prettyDate = function (?string $d): ?string {
-            if (!$d) return null;
+            if (! $d) {
+                return null;
+            }
             try {
                 return Carbon::parse($d)->format('M jS, Y');
             } catch (\Throwable) {
@@ -94,10 +87,10 @@ class SubmissionController extends Controller
         $notesParts = [];
         $dealerKycnDate = $dealer->know_your_car_date;
         if ($dealerKycnDate) {
-            $notesParts[] = 'KYCN Date: ' . $prettyDate($dealerKycnDate->toDateString());
+            $notesParts[] = 'KYCN Date: '.$prettyDate($dealerKycnDate->toDateString());
         }
-        if (!empty($validated['vehicle_purchased'])) {
-            $notesParts[] = 'Vehicle Purchased: ' . $prettyDate($validated['vehicle_purchased']);
+        if (! empty($validated['vehicle_purchased'])) {
+            $notesParts[] = 'Vehicle Purchased: '.$prettyDate($validated['vehicle_purchased']);
         }
         $notes = implode("\n", $notesParts);
 
@@ -106,7 +99,7 @@ class SubmissionController extends Controller
                 'dealer_id' => $dealer->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
-                'full_name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+                'full_name' => trim($validated['first_name'].' '.$validated['last_name']),
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'guest_count' => (int) $validated['number_of_attendees'],

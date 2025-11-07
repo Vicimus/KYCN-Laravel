@@ -32,9 +32,6 @@ class Submission extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function dealer(): BelongsTo
     {
         return $this->belongsTo(Dealer::class);

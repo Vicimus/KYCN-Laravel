@@ -11,7 +11,7 @@ class ExportController extends Controller
 {
     public function allCsv(): StreamedResponse
     {
-        $filename = 'kycn-all-' . now()->format('Ymd_His') . '.csv';
+        $filename = 'kycn-all-'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w');
@@ -29,7 +29,7 @@ class ExportController extends Controller
                             $r->full_name,
                             $r->email,
                             $r->phone,
-                            (int)$r->guest_count,
+                            (int) $r->guest_count,
                             $r->wants_appointment ? 1 : 0,
                             optional($r->know_your_car_date)->format('Y-m-d'),
                             optional($r->vehicle_purchased)->format('Y-m-d'),
@@ -59,7 +59,7 @@ class ExportController extends Controller
     // ====== ADMIN: per-dealer CSV ======
     public function dealerCsv(Dealer $dealer): StreamedResponse
     {
-        $filename = 'kycn-' . $dealer->code . '-' . now()->format('Ymd_His') . '.csv';
+        $filename = 'kycn-'.$dealer->code.'-'.now()->format('Ymd_His').'.csv';
         $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
 
         return response()->streamDownload(function () use ($subs, $dealer) {
@@ -74,7 +74,7 @@ class ExportController extends Controller
                     $r->full_name,
                     $r->email,
                     $r->phone,
-                    (int)$r->guest_count,
+                    (int) $r->guest_count,
                     $r->wants_appointment ? 1 : 0,
                     optional($r->know_your_car_date)->format('Y-m-d'),
                     optional($r->vehicle_purchased)->format('Y-m-d'),
@@ -95,7 +95,8 @@ class ExportController extends Controller
             ->orderBy('know_your_car_date', 'asc')
             ->get();
 
-        $fname = 'KYCN-' . $dealer->code . '.ics';
+        $fname = 'KYCN-'.$dealer->code.'.ics';
+
         return $this->icsResponse($fname, $subs, $dealer);
     }
 
@@ -103,7 +104,7 @@ class ExportController extends Controller
     public function publicDealerCsv(string $token): StreamedResponse
     {
         $dealer = Dealer::where('portal_token', $token)->firstOrFail();
-        $filename = 'kycn-' . $dealer->code . '-' . now()->format('Ymd_His') . '.csv';
+        $filename = 'kycn-'.$dealer->code.'-'.now()->format('Ymd_His').'.csv';
         $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
 
         return response()->streamDownload(function () use ($subs, $dealer) {
@@ -118,7 +119,7 @@ class ExportController extends Controller
                     $r->full_name,
                     $r->email,
                     $r->phone,
-                    (int)$r->guest_count,
+                    (int) $r->guest_count,
                     $r->wants_appointment ? 1 : 0,
                     optional($r->know_your_car_date)->format('Y-m-d'),
                     optional($r->vehicle_purchased)->format('Y-m-d'),
@@ -140,7 +141,8 @@ class ExportController extends Controller
             ->orderBy('know_your_car_date', 'asc')
             ->get();
 
-        $fname = 'KYCN-' . $dealer->code . '.ics';
+        $fname = 'KYCN-'.$dealer->code.'.ics';
+
         return $this->icsResponse($fname, $subs, $dealer);
     }
 
@@ -160,7 +162,7 @@ class ExportController extends Controller
         $lines[] = 'METHOD:PUBLISH';
 
         foreach ($submissions as $s) {
-            if (!$s->know_your_car_date) {
+            if (! $s->know_your_car_date) {
                 continue;
             }
 
@@ -168,34 +170,35 @@ class ExportController extends Controller
             $start = $date->copy()->setTime(18, 0, 0); // 6:00 PM
             $end = $date->copy()->setTime(19, 0, 0); // 7:00 PM
 
-            $uid = 'kycn-' . $s->id . '@' . parse_url(config('app.url'), PHP_URL_HOST);
-            $summary = ($dealer?->name ?: optional($s->dealer)->name ?: 'Know Your Car Night') . ' — ' . $s->full_name;
+            $uid = 'kycn-'.$s->id.'@'.parse_url(config('app.url'), PHP_URL_HOST);
+            $summary = ($dealer?->name ?: optional($s->dealer)->name ?: 'Know Your Car Night').' — '.$s->full_name;
 
             $lines[] = 'BEGIN:VEVENT';
-            $lines[] = 'UID:' . $uid;
-            $lines[] = 'DTSTAMP:' . now()->utc()->format('Ymd\THis\Z');
-            $lines[] = 'DTSTART:' . $start->format('Ymd\THis');
-            $lines[] = 'DTEND:' . $end->format('Ymd\THis');
-            $lines[] = 'SUMMARY:' . $this->icsEscape($summary);
+            $lines[] = 'UID:'.$uid;
+            $lines[] = 'DTSTAMP:'.now()->utc()->format('Ymd\THis\Z');
+            $lines[] = 'DTSTART:'.$start->format('Ymd\THis');
+            $lines[] = 'DTEND:'.$end->format('Ymd\THis');
+            $lines[] = 'SUMMARY:'.$this->icsEscape($summary);
             if ($s->notes) {
-                $lines[] = 'DESCRIPTION:' . $this->icsEscape($s->notes);
+                $lines[] = 'DESCRIPTION:'.$this->icsEscape($s->notes);
             }
             $lines[] = 'END:VEVENT';
         }
 
         $lines[] = 'END:VCALENDAR';
-        $body = implode("\r\n", $lines) . "\r\n";
+        $body = implode("\r\n", $lines)."\r\n";
 
         return response($body, 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',
-            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
         ]);
     }
 
     protected function icsEscape(string $text): string
     {
         // Basic ICS escaping
-        $text = str_replace(["\\", ";", ",", "\n"], ["\\\\", "\;", "\,", "\\n"], $text);
+        $text = str_replace(['\\', ';', ',', "\n"], ['\\\\', "\;", "\,", '\\n'], $text);
+
         return $text;
     }
 }

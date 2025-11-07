@@ -13,8 +13,6 @@ use Illuminate\Support\Str;
 class IcsController extends Controller
 {
     /**
-     * @param Request $request
-     *
      * @return ResponseFactory|Response
      */
     public function feed(Request $request)
@@ -41,7 +39,7 @@ class IcsController extends Controller
         foreach ($subs as $s) {
             $kycnDate = $this->findKycnDate($s);
 
-            if (!$kycnDate) {
+            if (! $kycnDate) {
                 continue;
             }
 
@@ -85,11 +83,11 @@ class IcsController extends Controller
             ? $submission->meta_json
             : (json_decode($submission->meta_json ?? '', true) ?: []);
 
-        if (!empty($meta['know_your_car_date']) && strtotime($meta['know_your_car_date'])) {
+        if (! empty($meta['know_your_car_date']) && strtotime($meta['know_your_car_date'])) {
             return $meta['know_your_car_date'];
         }
 
-        if (!empty($submission->notes) && preg_match('/KYCN Date\s*:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i', $submission->notes, $m)) {
+        if (! empty($submission->notes) && preg_match('/KYCN Date\s*:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i', $submission->notes, $m)) {
             if (strtotime($m[1])) {
                 return $m[1];
             }
@@ -101,8 +99,8 @@ class IcsController extends Controller
     protected function escape(string $text): string
     {
         return str_replace(
-            ["\\", ";", ",", "\n", "\r"],
-            ["\\\\", "\;", "\,", "\\n", ""],
+            ['\\', ';', ',', "\n", "\r"],
+            ['\\\\', "\;", "\,", '\\n', ''],
             $text
         );
     }

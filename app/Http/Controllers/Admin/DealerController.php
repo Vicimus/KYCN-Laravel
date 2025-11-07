@@ -5,22 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Dealer;
 use App\Models\Submission;
+use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 use Random\RandomException;
 
 class DealerController extends Controller
 {
-    /**
-     * @return View
-     */
     public function create(): View
     {
-        $dealer = new Dealer();
+        $dealer = new Dealer;
 
         return view('admin.dealers.form', [
             'dealer' => $dealer,
@@ -28,11 +26,6 @@ class DealerController extends Controller
         ]);
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return View
-     */
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
@@ -44,7 +37,7 @@ class DealerController extends Controller
                         ->orWhere('code', 'like', "%{$q}%");
                 });
             })
-            ->orderByRaw("CASE WHEN name LIKE ? THEN 0 ELSE 1 END", [$q !== '' ? "{$q}%" : '%'])
+            ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', [$q !== '' ? "{$q}%" : '%'])
             ->orderBy('name')
             ->paginate(50)
             ->withQueryString();
@@ -52,11 +45,6 @@ class DealerController extends Controller
         return view('admin.dealers.index', compact('dealers', 'q'));
     }
 
-    /**
-     * @param Dealer $dealer
-     *
-     * @return View
-     */
     public function edit(Dealer $dealer): View
     {
         return view('admin.dealers.form', [
@@ -65,25 +53,31 @@ class DealerController extends Controller
         ]);
     }
 
-    /**
-     * @param Dealer $dealer
-     *
-     * @return View
-     */
-    public function show(Dealer $dealer): View
+    public function show(Request $request, Dealer $dealer): View
     {
-        $rows = Submission::where('dealer_id', $dealer->id)
-            ->orderByDesc('created_at')
-            ->get();
+        $rowsQuery = Submission::where('dealer_id', $dealer->id)
+            ->orderByDesc('created_at');
 
-        return view('admin.dealers.show', compact('dealer', 'rows'));
+        $filterDate = null;
+        if ($request->filled('created_date')) {
+            try {
+                $filterDate = Carbon::parse($request->input('created_date'))->toDateString();
+                $rowsQuery->whereDate('created_at', $filterDate);
+            } catch (\Throwable) {
+                $filterDate = null;
+            }
+        }
+
+        $rows = $rowsQuery->get();
+
+        return view('admin.dealers.show', [
+            'dealer' => $dealer,
+            'rows' => $rows,
+            'filterDate' => $filterDate,
+        ]);
     }
 
     /**
-     * @param Request $request
-     *
-     * @return RedirectResponse
-     *
      * @throws RandomException
      */
     public function store(Request $request): RedirectResponse
@@ -98,14 +92,14 @@ class DealerController extends Controller
         $logoPath = null;
         if ($request->hasFile('logo_file')) {
             $logoPath = $this->storeLogo($request->file('logo_file'));
-        } elseif (!empty($data['dealership_logo'])) {
+        } elseif (! empty($data['dealership_logo'])) {
             $logoPath = $data['dealership_logo'];
         }
 
         $code = Str::slug($data['name']);
         $suffix = '';
         while (Dealer::where('code', $code.$suffix)->exists()) {
-            $suffix = '-'.substr(bin2hex(random_bytes(2)),0,3);
+            $suffix = '-'.substr(bin2hex(random_bytes(2)), 0, 3);
         }
 
         Dealer::create([
@@ -118,12 +112,6 @@ class DealerController extends Controller
         return redirect()->route('admin.dealers.index')->with('success', 'Dealer created.');
     }
 
-    /**
-     * @param Request $request
-     * @param Dealer  $dealer
-     *
-     * @return RedirectResponse
-     */
     public function update(Request $request, Dealer $dealer): RedirectResponse
     {
         $data = $request->validate([
@@ -144,7 +132,7 @@ class DealerController extends Controller
         if ($request->hasFile('logo_file')) {
             $this->deleteLogo($logo);
             $logo = $this->storeLogo($request->file('logo_file'));
-        } elseif (!empty($data['dealership_logo'])) {
+        } elseif (! empty($data['dealership_logo'])) {
             $logo = $data['dealership_logo'];
         }
 
@@ -165,7 +153,7 @@ class DealerController extends Controller
         $directory = 'images/dealers';
         $publicDirectory = public_path($directory);
 
-        if (!File::exists($publicDirectory)) {
+        if (! File::exists($publicDirectory)) {
             File::makeDirectory($publicDirectory, 0755, true);
         }
 

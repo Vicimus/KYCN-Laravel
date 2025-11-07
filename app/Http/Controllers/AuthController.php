@@ -8,19 +8,11 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    /**
-     * @return View
-     */
     public function show(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * @param Request $request
-     *
-     * @return RedirectResponse
-     */
     public function login(Request $request): RedirectResponse
     {
         $request->validate(['password' => 'required']);
@@ -30,7 +22,7 @@ class AuthController extends Controller
             (string) $request->password
         );
 
-        if (!$ok) {
+        if (! $ok) {
             return back()->withInput()->withErrors(['password' => 'Incorrect password.']);
         }
 
@@ -39,9 +31,6 @@ class AuthController extends Controller
         return redirect()->intended(route('admin.dealers.index'));
     }
 
-    /**
-     * @return RedirectResponse
-     */
     public function logout(): RedirectResponse
     {
         session()->flush();

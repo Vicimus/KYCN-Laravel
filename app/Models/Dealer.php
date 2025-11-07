@@ -21,10 +21,6 @@ class Dealer extends Model
         'know_your_car_date' => 'date',
     ];
 
-
-    /**
-     * @return HasMany
-     */
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class);
@@ -51,7 +47,7 @@ class Dealer extends Model
     protected static function booted()
     {
         static::creating(function ($dealer) {
-            if (!$dealer->portal_token) {
+            if (! $dealer->portal_token) {
                 $dealer->portal_token = bin2hex(random_bytes(16));
             }
         });

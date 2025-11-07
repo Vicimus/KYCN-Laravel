@@ -3,6 +3,12 @@
 @section('title', 'New Registration')
 
 @section('content')
+    @php
+        $dealerOptions = $dealerOptions ?? collect();
+        $initialDateText = $dealer?->know_your_car_date?->format('l, F jS, Y');
+        $defaultDateMessage = 'Select a dealership to view the event date.';
+    @endphp
+
     @if (session('success') && !$errors->any())
         <div class="alert alert-success shadow-sm py-4 px-4 mb-4 text-center set-max-width">
             <div class="fs-4 fw-bold text-uppercase">Registration Received</div>
@@ -20,11 +26,12 @@
                      referrerpolicy="no-referrer"/>
                 <h3 class="m-0">Know Your Car Night</h3>
             </div>
-            @if($dealer?->know_your_car_date)
-                <div class="text-end fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 0.05em; font-size: 0.95rem;">
-                    {{ $dealer->know_your_car_date->format('l, F jS, Y') }}
-                </div>
-            @endif
+            <div id="kycnDateDisplay"
+                 class="text-end fw-bold text-secondary mb-3"
+                 style="letter-spacing: 0.05em; font-size: 0.95rem;"
+                 data-default-text="{{ $defaultDateMessage }}">
+                {{ $initialDateText ?? $defaultDateMessage }}
+            </div>
 
             <form id="kycnForm" method="post" action="{{ route('public.form.store', request()->query()) }}">
                 @csrf
@@ -36,11 +43,34 @@
 
                 <div class="mb-3">
                     <label class="fs-md">Dealership Name</label>
-                    <input name="dealership_name" class="form-control form-control-sm"
-                           placeholder="e.g., Thornhill Hyundai"
-                           value="{{ old('dealership_name', $dealer?->name) }}"
-                           autocomplete="organization"
-                    >
+                    @if($dealer)
+                        <p class="fw-bold mb-1">{{ $dealer->name }}</p>
+                        <input type="hidden" name="dealership_name" value="{{ $dealer->name }}">
+                    @elseif($dealerOptions->isNotEmpty())
+                        <select name="dealership_name"
+                                id="dealership_select"
+                                class="form-select form-select-sm @error('dealership_name') is-invalid @enderror"
+                                required>
+                            <option value="">Select a dealership...</option>
+                            @foreach($dealerOptions as $d)
+                                <option value="{{ $d->name }}"
+                                        data-date="{{ optional($d->know_your_car_date)->format('Y-m-d') }}"
+                                        {{ old('dealership_name') === $d->name ? 'selected' : '' }}>
+                                    {{ $d->name }} — {{ optional($d->know_your_car_date)->format('M j, Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('dealership_name')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    @else
+                        <input name="dealership_name" class="form-control form-control-sm"
+                               placeholder="e.g., Thornhill Hyundai"
+                               value="{{ old('dealership_name') }}"
+                               autocomplete="organization"
+                               required
+                        >
+                        <small class="text-secondary">No upcoming KYCN events available; please enter your dealership.</small>
+                    @endif
                 </div>
 
                 <div class="row g-3">
@@ -124,3 +154,35 @@
         </script>
     @endif
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.getElementById('dealership_select');
+        const dateDisplay = document.getElementById('kycnDateDisplay');
+
+        if (!select || !dateDisplay) {
+            return;
+        }
+
+        const defaultText = dateDisplay.dataset.defaultText || dateDisplay.textContent || '';
+        const locale = document.documentElement.lang || 'en-US';
+        const formatOptions = {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'};
+
+        function updateDateFromSelection() {
+            const option = select.options[select.selectedIndex];
+            const iso = option?.dataset?.date || '';
+
+            if (iso) {
+                const date = new Date(iso + 'T12:00:00');
+                dateDisplay.textContent = date.toLocaleDateString(locale, formatOptions);
+            } else {
+                dateDisplay.textContent = defaultText;
+            }
+        }
+
+        select.addEventListener('change', updateDateFromSelection);
+        updateDateFromSelection();
+    });
+</script>
+@endpush
