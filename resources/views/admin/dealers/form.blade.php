@@ -29,6 +29,7 @@
                        id="dealership_name"
                        class="form-control form-control-sm"
                        value="{{ old('name', $isEdit ? $dealer->name : '') }}"
+                       autocomplete="off"
                        required>
                 @error('name')
                 <div class="text-danger fs-md">{{ $message }}</div> @enderror
@@ -53,7 +54,7 @@
             @endif
 
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="logo_upload_file" class="fs-md">Logo (upload)</label>
                     <input type="file"
                            class="form-control form-control-sm"
@@ -65,7 +66,7 @@
                     <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="logo_upload_src" class="fs-md">Logo URL (optional)</label>
                     <input name="dealership_logo"
                            type="url"
@@ -76,10 +77,8 @@
                     @error('dealership_logo')
                     <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>
-            </div>
 
-            <div class="row g-3 mt-1">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="kyc_date" class="fs-md">Know Your Car Night Date</label>
                     <input type="date"
                            class="form-control form-control-sm @error('know_your_car_date') is-invalid @enderror"

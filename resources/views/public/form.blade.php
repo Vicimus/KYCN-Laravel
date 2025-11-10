@@ -41,6 +41,8 @@
                     <input type="text" name="website">
                 </div>
 
+                <input type="hidden" name="event_date" id="event_date" value="">
+
                 <div class="mb-3">
                     <label class="fs-md">Dealership Name</label>
                     @if($dealer)
@@ -73,7 +75,7 @@
                     @endif
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="fs-md" for="first_name">First Name <span class="text-danger">*</span></label>
                         <input id="first_name" name="first_name"
@@ -90,7 +92,9 @@
                         @error('last_name')
                         <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
+                </div>
 
+                <div class="row mb-3">
                     <div class="col-12">
                         <label class="fs-md">Number of Attendees (Including Yourself) <span
                                     class="text-danger">*</span></label><br>
@@ -104,8 +108,10 @@
                             <label class="btn btn-sm btn-outline-secondary" for="a2">2</label>
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-md-4">
                         <label class="fs-md" for="email">Email <span class="text-danger">*</span></label>
                         <input id="email" name="email" type="email"
                                class="form-control form-control-sm @error('email') is-invalid @enderror"
@@ -114,7 +120,8 @@
                         @error('email')
                         <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-6">
+
+                    <div class="col-md-4">
                         <label class="fs-md" for="phone">Phone <span class="text-danger">*</span></label>
                         <input id="phone" name="phone"
                                class="form-control form-control-sm @error('phone') is-invalid @enderror"
@@ -125,7 +132,7 @@
                         <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fs-md" for="vehicle_purchased">Vehicle Purchased</label>
                         <input id="vehicle_purchased" name="vehicle_purchased" type="date"
                                class="form-control form-control-sm"
@@ -134,7 +141,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end mt-3">
-                    <button class="btn btn-primary px-4 py-2 fw-bold text-uppercase" type="submit" title="RSVP">
+                    <button class="btn btn-sm btn-primary px-4 py-2 fw-bold text-uppercase" type="submit" title="RSVP">
                         RSVP
                     </button>
                 </div>
