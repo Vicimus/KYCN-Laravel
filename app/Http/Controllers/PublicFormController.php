@@ -84,6 +84,30 @@ class PublicFormController extends Controller
             $notes[] = 'Vehicle Purchased: '.date('M jS, Y', strtotime($data['vehicle_purchased']));
         }
         $notesText = implode("\n", $notes);
+        $fullNameRaw = trim($data['first_name'].' '.$data['last_name']);
+
+        $fpData = [
+            'dealer_id' => $dealer?->id,
+            'know_your_car_date' => $selectedKycnDate?->toDateString(),
+            'full_name' => Submission::normalizeName($fullNameRaw),
+            'email' => Submission::normalizeEmail($data['email']),
+            'phone' => Submission::normalizePhone($data['phone']),
+            'guest_count' => (int) $data['number_of_attendees'],
+            'wants_appointment' => 0,
+            'notes' => Submission::normalizeNotes($notesText),
+        ];
+        $fingerprint = Submission::makeFingerprint($fpData);
+
+        $duplicateExists = Submission::query()
+            ->where('fingerprint', $fingerprint)
+            ->exists();
+
+        if ($duplicateExists) {
+            return redirect()
+                ->route('public.form', $qs)
+                ->with('info', 'We have already received your registration')
+                ->withInput();
+        }
 
         try {
             $submission = Submission::create([
@@ -91,7 +115,7 @@ class PublicFormController extends Controller
                 'event_id' => null,
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
-                'full_name' => trim($data['first_name'].' '.$data['last_name']),
+                'full_name' => $fullNameRaw,
                 'email' => $data['email'],
                 'phone' => $data['phone'],
                 'guest_count' => (int) $data['number_of_attendees'],
@@ -100,8 +124,16 @@ class PublicFormController extends Controller
                 'vehicle_purchased' => $data['vehicle_purchased'] ?? null,
                 'notes' => $notesText,
                 'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),
+                'fingerprint' => $fingerprint,
             ]);
         } catch (\Throwable $e) {
+            if ((string) $e->getCode() == '23000') {
+                return redirect()
+                    ->route('public.form', $qs)
+                    ->with('info', 'We have already received your registration')
+                    ->withInput();
+            }
+
             SubmissionNotifier::notifyFailure([
                 'source' => 'public.form.store',
                 'input' => $request->except(['_token']),

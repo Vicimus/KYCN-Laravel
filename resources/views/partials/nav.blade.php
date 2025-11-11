@@ -12,14 +12,12 @@
 
 <nav class="navbar navbar-light bg-light border-bottom">
     <div class="container py-0 px-3">
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center">
             <a class="text-decoration-none text-dark fw-bold"
                href="{{ $isAdmin ? route('admin.dealers.index') : route('public.form') }}"
             >
                 KYCN {{ $isAdmin ? 'Admin' : '' }}
             </a>
-
-            @include('partials.flash')
         </div>
 
         <div class="ms-auto d-flex align-items-center">

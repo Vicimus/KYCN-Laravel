@@ -40,11 +40,11 @@
                 </div>
 
                 <div class="btn-group ps-2 ms-2 border-start rounded-0" role="group">
-                    <a href="{{ route('admin.export.all.csv', request()->query()) }}"
+                    <a href="{{ route('admin.export.all.xlsx', request()->query()) }}"
                        class="btn btn-sm btn-outline-primary"
-                       title="Export CSV (All)"
+                       title="Export Excel (All)"
                     >
-                        <i class="fas fa-file-lines"></i>
+                        <i class="fas fa-file-excel"></i>
                     </a>
                     <a href="{{ route('admin.export.all.ics', request()->query()) }}"
                        class="btn btn-sm btn-outline-primary"
@@ -101,7 +101,7 @@
                             <td class="text-end">
                                 <a href="{{ route('admin.dealers.edit', $d) }}"
                                    class="btn btn-sm btn-outline-secondary me-3"
-                                   title="Edit {{ $d->name }}"
+                                   title="Edit Dealer"
                                 >
                                     <i class="fas fa-user-pen"></i>
                                 </a>
@@ -116,9 +116,9 @@
                                     </button>
                                     <a href="{{ route('admin.dealers.export', ['dealer' => $d->portal_token]) }}"
                                        class="btn btn-sm btn-outline-secondary"
-                                       title="Export CSV"
+                                       title="Export Excel"
                                     >
-                                        <i class="fas fa-file-lines"></i>
+                                        <i class="fas fa-file-excel"></i>
                                     </a>
                                     <a href="{{ route('admin.dealers.ics', ['dealer' => $d->portal_token]) }}"
                                        class="btn btn-sm btn-outline-secondary"

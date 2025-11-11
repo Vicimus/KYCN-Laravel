@@ -9,12 +9,7 @@
         $defaultDateMessage = 'Select a dealership to view the event date.';
     @endphp
 
-    @if (session('success') && !$errors->any())
-        <div class="alert alert-success shadow-sm py-4 px-4 mb-4 text-center set-max-width">
-            <div class="fs-4 fw-bold text-uppercase">Registration Received</div>
-            <div class="fs-6 mt-1">Thanks! We’ll be in touch with the details shortly.</div>
-        </div>
-    @endif
+    @include('partials.alert')
 
     <div class="card shadow-sm set-max-width">
         <div class="card-body">
@@ -69,14 +64,16 @@
                         @error('dealership_name')
                         <div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     @else
-                        <input name="dealership_name" class="form-control form-control-sm"
+                        <input name="dealership_name"
+                               class="form-control form-control-sm"
                                placeholder="e.g., Thornhill Hyundai"
                                value="{{ old('dealership_name') }}"
                                autocomplete="organization"
                                required
                         >
-                        <small class="text-secondary">No upcoming KYCN events available; please enter your
-                            dealership.</small>
+                        <small class="text-secondary">
+                            No upcoming KYCN events available; please enter your dealership.
+                        </small>
                     @endif
                 </div>
 

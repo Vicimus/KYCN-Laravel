@@ -9,7 +9,7 @@
 
 @section('content')
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
-        <div class="d-flex justify-content-between p-3 gap-3">
+        <div class="d-flex justify-content-between align-items-center p-3 gap-3">
             <div class="d-flex align-items-center gap-3">
                 @if($dealer->dealership_logo_url)
                     <img src="{{ $dealer->dealership_logo_url }}" class="table-dealer-logo" alt="{{ $dealer->name }} Logo"/>
@@ -20,9 +20,9 @@
             <div class="btn-group" role="group">
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ route('admin.dealers.export', ['dealer' => $dealer->portal_token]) }}"
-                   title="Export CSV"
+                   title="Export Excel"
                 >
-                    <i class="fas fa-file-lines"></i>
+                    <i class="fas fa-file-excel"></i>
                 </a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ route('admin.dealers.ics', ['dealer' => $dealer->portal_token]) }}"
