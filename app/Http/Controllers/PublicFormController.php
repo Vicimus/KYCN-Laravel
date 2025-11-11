@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dealer;
 use App\Models\Submission;
 use App\Services\SubmissionNotifier;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,6 +48,7 @@ class PublicFormController extends Controller
             'email' => 'required|email',
             'phone' => 'required|string|max:30',
             'vehicle_purchased' => 'nullable|date',
+            'know_your_car_date' => 'nullable|date',
         ]);
 
         $dealer = null;
@@ -59,23 +61,26 @@ class PublicFormController extends Controller
             $qs['d'] = $request->query('d');
         }
 
-        if (! $dealer && ! empty($data['dealership_name'])) {
+        if (!$dealer && !empty($data['dealership_name'])) {
             $dealer = Dealer::firstOrCreate(
                 ['name' => trim($data['dealership_name'])],
                 ['code' => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', $data['dealership_name'])) ?: 'DEALER'.random_int(1000, 9999)]
             );
         }
 
-        if (! $dealer) {
+        if (!$dealer) {
             $dealer = Dealer::orderBy('id')->first();
         }
 
+        $selectedKycnDate = $request->filled('know_your_car_date')
+            ? Carbon::parse($request->string('know_your_car_date'))
+            : ($dealer?->know_your_car_date ? $dealer->know_your_car_date->copy() : null);
+
         $notes = [];
-        $dealerKycnDate = $dealer?->know_your_car_date;
-        if ($dealerKycnDate) {
-            $notes[] = 'KYCN Date: '.$dealerKycnDate->format('M jS, Y');
+        if ($selectedKycnDate) {
+            $notes[] = 'KYCN Date: '.$selectedKycnDate->format('M jS, Y');
         }
-        if (! empty($data['vehicle_purchased'])) {
+        if (!empty($data['vehicle_purchased'])) {
             $notes[] = 'Vehicle Purchased: '.date('M jS, Y', strtotime($data['vehicle_purchased']));
         }
         $notesText = implode("\n", $notes);
@@ -91,7 +96,7 @@ class PublicFormController extends Controller
                 'phone' => $data['phone'],
                 'guest_count' => (int) $data['number_of_attendees'],
                 'wants_appointment' => 0,
-                'know_your_car_date' => $dealerKycnDate?->toDateString(),
+                'know_your_car_date' => $selectedKycnDate?->toDateString(),
                 'vehicle_purchased' => $data['vehicle_purchased'] ?? null,
                 'notes' => $notesText,
                 'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),

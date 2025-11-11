@@ -95,7 +95,7 @@
                             </td>
                             <td>
                                 <span class="fs-md text-secondary">
-                                    {{ $d->know_your_car_date?->format('F jS, Y • g:i A') }}
+                                    {{ $d->know_your_car_date?->format('F jS, Y') }}
                                 </span>
                             </td>
                             <td class="text-end">

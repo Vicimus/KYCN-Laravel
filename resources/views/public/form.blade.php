@@ -41,7 +41,11 @@
                     <input type="text" name="website">
                 </div>
 
-                <input type="hidden" name="event_date" id="event_date" value="">
+                <input type="date"
+                       class="d-none"
+                       name="know_your_car_date"
+                       id="know_your_car_date_input"
+                       value="{{ optional($dealer?->know_your_car_date)->toDateString() }}">
 
                 <div class="mb-3">
                     <label class="fs-md">Dealership Name</label>
@@ -56,7 +60,7 @@
                             <option value="">Select a dealership...</option>
                             @foreach($dealerOptions as $d)
                                 <option value="{{ $d->name }}"
-                                        data-date="{{ optional($d->know_your_car_date)->format('Y-m-d') }}"
+                                        data-date="{{ optional($d->know_your_car_date)->toDateString() }}"
                                         {{ old('dealership_name') === $d->name ? 'selected' : '' }}>
                                     {{ $d->name }} — {{ optional($d->know_your_car_date)->format('M j, Y') }}
                                 </option>
@@ -71,7 +75,8 @@
                                autocomplete="organization"
                                required
                         >
-                        <small class="text-secondary">No upcoming KYCN events available; please enter your dealership.</small>
+                        <small class="text-secondary">No upcoming KYCN events available; please enter your
+                            dealership.</small>
                     @endif
                 </div>
 
@@ -163,33 +168,53 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const select = document.getElementById('dealership_select');
-        const dateDisplay = document.getElementById('kycnDateDisplay');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const select = document.getElementById('dealership_select');
 
-        if (!select || !dateDisplay) {
-            return;
-        }
-
-        const defaultText = dateDisplay.dataset.defaultText || dateDisplay.textContent || '';
-        const locale = document.documentElement.lang || 'en-US';
-        const formatOptions = {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'};
-
-        function updateDateFromSelection() {
-            const option = select.options[select.selectedIndex];
-            const iso = option?.dataset?.date || '';
-
-            if (iso) {
-                const date = new Date(iso + 'T12:00:00');
-                dateDisplay.textContent = date.toLocaleDateString(locale, formatOptions);
-            } else {
-                dateDisplay.textContent = defaultText;
+            if (!select) {
+                return;
             }
-        }
 
-        select.addEventListener('change', updateDateFromSelection);
-        updateDateFromSelection();
-    });
-</script>
+            const dateDisplay = document.getElementById('kycnDateDisplay');
+            const eventDate = document.getElementById('know_your_car_date_input');
+
+            const defaultText = dateDisplay.dataset.defaultText || dateDisplay.textContent || '';
+            const locale = document.documentElement.lang || 'en-US';
+
+            const pretty = (iso) => {
+                if (!iso) {
+                    return defaultText;
+                }
+
+                const d = new Date(iso + 'T12:00:00');
+                const day = d.getDate();
+                const ord = (n) => {
+                    const j = n % 10;
+                    const k = n % 100;
+
+                    return j === 1 && k !== 11 ? 'st' : j === 2 && k !== 12 ? 'nd' : j === 3 && k !== 13 ? 'rd' : 'th';
+                };
+                const weekday = d.toLocaleDateString(locale, { weekday: 'long' });
+                const month = d.toLocaleDateString(locale, { month: 'long' });
+
+                return `${weekday}, ${month} ${day}${ord(day)}, ${d.getFullYear()}`;
+            };
+
+            function updateDateFromSelection() {
+                const opt = select.options[select.selectedIndex];
+                const iso = opt?.dataset?.date?.trim?.() || '';
+
+                eventDate.value = iso;
+                eventDate.setAttribute('value', iso);
+
+                if (dateDisplay) {
+                    dateDisplay.textContent = pretty(iso);
+                }
+            }
+
+            select.addEventListener('change', updateDateFromSelection);
+            updateDateFromSelection();
+        });
+    </script>
 @endpush
