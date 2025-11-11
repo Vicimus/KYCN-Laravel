@@ -64,8 +64,7 @@
                         <th>Dealership Name</th>
                         <th>Logo</th>
                         <th>URL</th>
-                        <th>Created</th>
-                        <th>Updated</th>
+                        <th>Event Date</th>
                         <th class="text-end">Actions</th>
                     </tr>
                     </thead>
@@ -96,12 +95,7 @@
                             </td>
                             <td>
                                 <span class="fs-md text-secondary">
-                                    {{ $d->created_at?->format('F jS, Y • g:i A') }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="fs-md text-secondary">
-                                    {{ $d->updated_at?->format('F jS, Y • g:i A') }}
+                                    {{ $d->know_your_car_date?->format('F jS, Y • g:i A') }}
                                 </span>
                             </td>
                             <td class="text-end">
