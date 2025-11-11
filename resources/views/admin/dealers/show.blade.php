@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @php
+    use Carbon\Carbon;
     use Illuminate\Support\Str;
 @endphp
 
@@ -36,29 +37,42 @@
             <form method="get"
                   action="{{ route('admin.dealers.show', $dealer) }}"
                   class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="created_date" class="form-label fw-semibold">Filter by Submission Date</label>
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label fw-bold">Start Date</label>
                     <input type="date"
                            class="form-control form-control-sm"
-                           id="created_date"
-                           name="created_date"
-                           value="{{ $filterDate ?? request('created_date') }}">
+                           id="start_date"
+                           name="start_date"
+                           value="{{ request('start_date') }}">
                 </div>
+
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label fw-bold">End Date</label>
+                    <input type="date"
+                           class="form-control form-control-sm"
+                           id="end_date"
+                           name="end_date"
+                           value="{{ request('end_date') }}">
+                </div>
+
                 <div class="col-md-4">
-                    <label for="submissionFilter" class="form-label fw-semibold">Search Submissions</label>
+                    <label for="submissionFilter" class="form-label fw-bold">Search Submissions</label>
                     <input type="search"
                            id="submissionFilter"
                            class="form-control form-control-sm"
                            placeholder="Search name, email, notes...">
                 </div>
-                <div class="col-md-4 d-flex gap-2">
-                    <button class="btn btn-sm btn-primary align-self-end" type="submit">
-                        Apply
-                    </button>
-                    <a href="{{ route('admin.dealers.show', $dealer) }}"
-                       class="btn btn-sm btn-outline-secondary align-self-end">
-                        Clear
-                    </a>
+
+                <div class="col-md-2 d-flex justify-content-md-end">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary" type="submit" title="Apply Filter">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <a href="{{ route('admin.dealers.show', $dealer) }}"
+                           class="btn btn-sm btn-outline-secondary" title="Clear">
+                            <i class="fas fa-rotate-left"></i>
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -68,7 +82,7 @@
                 <table class="table kycn-table sm-table m-0 text-nowrap" id="dealerSubmissionsTable">
                     <thead>
                     <tr>
-                        <th class="cursor-pointer" data-sort-key="created_at" data-sort-type="date">When</th>
+                        <th class="cursor-pointer" data-sort-key="know_your_car_date" data-sort-type="date">Event Date</th>
                         <th class="cursor-pointer" data-sort-key="name">Name</th>
                         <th class="cursor-pointer text-center" data-sort-key="guest_count" data-sort-type="number">Guests</th>
                         <th class="cursor-pointer text-center" data-sort-key="appointment">Appt?</th>
@@ -78,25 +92,30 @@
                     <tbody>
                     @foreach($rows as $r)
                         <tr>
-                            <td data-column="created_at"
-                                data-value="{{ $r->created_at?->timestamp ?? '' }}">
-                                <strong>{{ $r->created_at?->format('M jS, Y • g:ia') }}</strong>
+                            <td data-column="know_your_car_date"
+                                data-value="{{ Carbon::parse($r->know_your_car_date)->timestamp ?? '' }}">
+                                <strong>
+                                    {{ $r->know_your_car_date ? Carbon::parse($r->know_your_car_date)->format('M jS, Y') : '—' }}
+                                </strong>
                             </td>
-                            <td data-column="name"
-                                data-value="{{ Str::lower($r->full_name) }}">
+
+                            <td data-column="name" data-value="{{ Str::lower($r->full_name) }}">
                                 {{ $r->full_name }}
                                 <div class="text-secondary fs-sm">{{ $r->email }}</div>
                             </td>
+
                             <td class="text-center"
                                 data-column="guest_count"
                                 data-value="{{ (int) $r->guest_count }}">
                                 {{ (int) $r->guest_count }}
                             </td>
+
                             <td class="text-center"
                                 data-column="appointment"
                                 data-value="{{ $r->wants_appointment ? 1 : 0 }}">
                                 {{ $r->wants_appointment ? 'Yes' : 'No' }}
                             </td>
+
                             <td data-column="notes"
                                 data-value="{{ Str::lower($r->notes ?? '') }}">
                                 {!! nl2br(e((string) $r->notes)) !!}

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Random\RandomException;
+use Throwable;
 
 class DealerController extends Controller
 {
@@ -56,25 +57,39 @@ class DealerController extends Controller
     public function show(Request $request, Dealer $dealer): View
     {
         $rowsQuery = Submission::where('dealer_id', $dealer->id)
-            ->orderByDesc('created_at');
+            ->orderBy('know_your_car_date')
+            ->orderBy('last_name')
+            ->orderBy('first_name');
 
-        $filterDate = null;
-        if ($request->filled('created_date')) {
+        $startDate = null;
+        $endDate = null;
+
+        if ($request->filled('start_date')) {
             try {
-                $filterDate = Carbon::parse($request->input('created_date'))->toDateString();
-                $rowsQuery->whereDate('created_at', $filterDate);
-            } catch (\Throwable) {
-                $filterDate = null;
+                $startDate = Carbon::parse($request->input('start_date'))->toDateString();
+                $rowsQuery->whereDate('know_your_car_date', '>=', $startDate);
+            } catch (Throwable) {
+                $startDate = null;
+            }
+        }
+
+        if ($request->filled('end_date')) {
+            try {
+                $endDate = Carbon::parse($request->input('end_date'))->toDateString();
+                $rowsQuery->whereDate('know_your_car_date', '<=', $endDate);
+            } catch (Throwable) {
+                $endDate = null;
             }
         }
 
         $rows = $rowsQuery->get();
 
-        return view('admin.dealers.show', [
-            'dealer' => $dealer,
-            'rows' => $rows,
-            'filterDate' => $filterDate,
-        ]);
+        return view('admin.dealers.show', compact(
+            'dealer',
+            'rows',
+            'startDate',
+            'endDate',
+        ));
     }
 
     /**
@@ -92,8 +107,9 @@ class DealerController extends Controller
         $logoPath = null;
         if ($request->hasFile('logo_file')) {
             $logoPath = $this->storeLogo($request->file('logo_file'));
+            $logoPath = $this->normalizeLogo($logoPath);
         } elseif (! empty($data['dealership_logo'])) {
-            $logoPath = $data['dealership_logo'];
+            $logoPath = $this->normalizeLogo($data['dealership_logo']);
         }
 
         $code = Str::slug($data['name']);
@@ -132,8 +148,9 @@ class DealerController extends Controller
         if ($request->hasFile('logo_file')) {
             $this->deleteLogo($logo);
             $logo = $this->storeLogo($request->file('logo_file'));
+            $logo = $this->normalizeLogo($logo);
         } elseif (! empty($data['dealership_logo'])) {
-            $logo = $data['dealership_logo'];
+            $logo = $this->normalizeLogo($data['dealership_logo']);
         }
 
         $dealer->update([
@@ -143,6 +160,44 @@ class DealerController extends Controller
         ]);
 
         return redirect()->route('admin.dealers.index')->with('success', 'Dealer updated.');
+    }
+
+    /**
+     * Remove a previously uploaded logo if it lives within the public directory.
+     */
+    private function deleteLogo(?string $path): void
+    {
+        if (empty($path) || Str::startsWith($path, ['http://', 'https://', '//'])) {
+            return;
+        }
+
+        $fullPath = public_path(ltrim($path, '/'));
+
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
+    }
+
+    /**
+     * @param string|null $value
+     *
+     * @return string|null
+     */
+    private function normalizeLogo(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (Str::startsWith($value, ['http://', 'https://', '//'])) {
+            $value = preg_replace('#^http://#i', 'https://', $value);
+            if (Str::startsWith($value, '//')) {
+                $value = 'https:' . $value;
+            }
+            return $value;
+        }
+
+        return secure_url(ltrim($value, '/'));
     }
 
     /**
@@ -163,21 +218,5 @@ class DealerController extends Controller
         $file->move($publicDirectory, $filename);
 
         return '/'.$directory.'/'.$filename;
-    }
-
-    /**
-     * Remove a previously uploaded logo if it lives within the public directory.
-     */
-    private function deleteLogo(?string $path): void
-    {
-        if (empty($path) || Str::startsWith($path, ['http://', 'https://', '//'])) {
-            return;
-        }
-
-        $fullPath = public_path(ltrim($path, '/'));
-
-        if (File::exists($fullPath)) {
-            File::delete($fullPath);
-        }
     }
 }

@@ -73,7 +73,7 @@
                            id="logo_upload_src"
                            class="form-control form-control-sm"
                            placeholder="https://..."
-                           value="{{ old('dealership_logo', $dealer->dealership_logo) }}">
+                           value="{{ old('dealership_logo', $dealer->dealership_logo_url) }}">
                     @error('dealership_logo')
                     <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>
