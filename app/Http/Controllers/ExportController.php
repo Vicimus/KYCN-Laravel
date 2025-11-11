@@ -2,50 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SubmissionsExport;
 use App\Models\Dealer;
 use App\Models\Submission;
 use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
-    public function allCsv(): StreamedResponse
-    {
-        $filename = 'kycn-all-'.now()->format('Ymd_His').'.csv';
-
-        return response()->streamDownload(function () {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
-
-            Submission::with('dealer')
-                ->orderBy('created_at', 'asc')
-                ->chunk(500, function ($chunk) use ($out) {
-                    foreach ($chunk as $r) {
-                        fputcsv($out, [
-                            $r->id,
-                            optional($r->created_at)->format('Y-m-d H:i:s'),
-                            optional($r->dealer)->name,
-                            $r->event_id,
-                            $r->full_name,
-                            $r->email,
-                            $r->phone,
-                            (int) $r->guest_count,
-                            $r->wants_appointment ? 1 : 0,
-                            optional($r->know_your_car_date)->format('Y-m-d'),
-                            optional($r->vehicle_purchased)->format('Y-m-d'),
-                            $r->notes,
-                        ]);
-                    }
-                });
-
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=utf-8',
-        ]);
-    }
-
-    // ====== ADMIN: all dealers ICS ======
-    public function allIcs()
+    /**
+     * @return ResponseFactory|Response
+     */
+    public function allIcs(): ResponseFactory|Response
     {
         $subs = Submission::query()
             ->whereNotNull('know_your_car_date')
@@ -56,103 +28,98 @@ class ExportController extends Controller
         return $this->icsResponse('KYCN-All.ics', $subs);
     }
 
-    // ====== ADMIN: per-dealer CSV ======
-    public function dealerCsv(Dealer $dealer): StreamedResponse
+    /**
+     * @return BinaryFileResponse
+     */
+    public function allXlsx(): BinaryFileResponse
     {
-        $filename = 'kycn-'.$dealer->code.'-'.now()->format('Ymd_His').'.csv';
-        $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
-
-        return response()->streamDownload(function () use ($subs, $dealer) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
-            foreach ($subs as $r) {
-                fputcsv($out, [
-                    $r->id,
-                    optional($r->created_at)->format('Y-m-d H:i:s'),
-                    $dealer->name,
-                    $r->event_id,
-                    $r->full_name,
-                    $r->email,
-                    $r->phone,
-                    (int) $r->guest_count,
-                    $r->wants_appointment ? 1 : 0,
-                    optional($r->know_your_car_date)->format('Y-m-d'),
-                    optional($r->vehicle_purchased)->format('Y-m-d'),
-                    $r->notes,
-                ]);
-            }
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=utf-8',
-        ]);
-    }
-
-    // ====== ADMIN: per-dealer ICS ======
-    public function dealerIcs(Dealer $dealer)
-    {
-        $subs = $dealer->submissions()
-            ->whereNotNull('know_your_car_date')
-            ->orderBy('know_your_car_date', 'asc')
+        $filename = sprintf('%s%s%s', 'kycn-all-', now()->format('Ymd_His'), '.xlsx');
+        $subs = Submission::with('dealer:id,name')
+            ->orderBy('full_name')
+            ->orderBy('know_your_car_date')
             ->get();
 
-        $fname = 'KYCN-'.$dealer->code.'.ics';
+        [$rows, $total] = $this->mapRowsAndTotal($subs);
 
-        return $this->icsResponse($fname, $subs, $dealer);
+        return Excel::download(new SubmissionsExport($rows, $total), $filename);
     }
-
-    // ====== PUBLIC: token CSV ======
-    public function publicDealerCsv(string $token): StreamedResponse
-    {
-        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
-        $filename = 'kycn-'.$dealer->code.'-'.now()->format('Ymd_His').'.csv';
-        $subs = $dealer->submissions()->orderBy('created_at', 'asc')->get();
-
-        return response()->streamDownload(function () use ($subs, $dealer) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'created_at', 'dealer', 'event_id', 'full_name', 'email', 'phone', 'guest_count', 'wants_appointment', 'know_your_car_date', 'vehicle_purchased', 'notes']);
-            foreach ($subs as $r) {
-                fputcsv($out, [
-                    $r->id,
-                    optional($r->created_at)->format('Y-m-d H:i:s'),
-                    $dealer->name,
-                    $r->event_id,
-                    $r->full_name,
-                    $r->email,
-                    $r->phone,
-                    (int) $r->guest_count,
-                    $r->wants_appointment ? 1 : 0,
-                    optional($r->know_your_car_date)->format('Y-m-d'),
-                    optional($r->vehicle_purchased)->format('Y-m-d'),
-                    $r->notes,
-                ]);
-            }
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=utf-8',
-        ]);
-    }
-
-    // ====== PUBLIC: token ICS ======
-    public function publicDealerIcs(string $token)
-    {
-        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
-        $subs = $dealer->submissions()
-            ->whereNotNull('know_your_car_date')
-            ->orderBy('know_your_car_date', 'asc')
-            ->get();
-
-        $fname = 'KYCN-'.$dealer->code.'.ics';
-
-        return $this->icsResponse($fname, $subs, $dealer);
-    }
-
-    // ================== Helpers ==================
 
     /**
-     * Build an ICS response from submissions that have know_your_car_date.
-     * Event time window: 6:00 PM–7:00 PM local server time (customize as needed).
+     * @param Dealer $dealer
+     *
+     * @return ResponseFactory|Response
      */
-    protected function icsResponse(string $filename, $submissions, ?Dealer $dealer = null)
+    public function dealerIcs(Dealer $dealer): ResponseFactory|Response
+    {
+        $subs = $dealer->submissions()
+            ->whereNotNull('know_your_car_date')
+            ->orderBy('know_your_car_date', 'asc')
+            ->get();
+
+        $fname = 'KYCN-'.$dealer->code.'.ics';
+
+        return $this->icsResponse($fname, $subs, $dealer);
+    }
+
+    /**
+     * @param Dealer $dealer
+     *
+     * @return BinaryFileResponse
+     */
+    public function dealerXlsx(Dealer $dealer): BinaryFileResponse
+    {
+        $filename = sprintf('%s%s%s%s%s', 'kycn-', $dealer->code, '-', now()->format('Ymd_His'), '.xlsx');
+        $subs = $dealer->submissions()
+            ->orderBy('full_name')
+            ->orderBy('know_your_car_date')
+            ->get();
+
+        [$rows, $total] = $this->mapRowsAndTotal($subs, $dealer);
+
+        return Excel::download(new SubmissionsExport($rows, $total), $filename);
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return ResponseFactory|Response
+     */
+    public function publicDealerIcs(string $token): ResponseFactory|Response
+    {
+        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
+        $subs = $dealer->submissions()
+            ->whereNotNull('know_your_car_date')
+            ->orderBy('know_your_car_date', 'asc')
+            ->get();
+
+        $fname = 'KYCN-'.$dealer->code.'.ics';
+
+        return $this->icsResponse($fname, $subs, $dealer);
+    }
+
+    public function publicDealerXlsx(string $token): BinaryFileResponse
+    {
+        $dealer = Dealer::where('portal_token', $token)->firstOrFail();
+
+        $filename = sprintf('%s%s%s%s%s', 'kycn-', $dealer->code, '-', now()->format('Ymd_His'), '.xlsx');
+        $subs = $dealer->submissions()
+            ->orderBy('full_name')
+            ->orderBy('know_your_car_date')
+            ->get();
+
+        [$rows, $total] = $this->mapRowsAndTotal($subs, $dealer);
+
+        return Excel::download(new SubmissionsExport($rows, $total), $filename);
+    }
+
+    /**
+     * @param string      $filename
+     * @param Collection  $submissions
+     * @param Dealer|null $dealer
+     *
+     * @return ResponseFactory|Response
+     */
+    protected function icsResponse(string $filename, Collection $submissions, ?Dealer $dealer = null): ResponseFactory|Response
     {
         $lines = [];
         $lines[] = 'BEGIN:VCALENDAR';
@@ -194,11 +161,43 @@ class ExportController extends Controller
         ]);
     }
 
+    /**
+     * @param string $text
+     *
+     * @return string
+     */
     protected function icsEscape(string $text): string
     {
-        // Basic ICS escaping
-        $text = str_replace(['\\', ';', ',', "\n"], ['\\\\', "\;", "\,", '\\n'], $text);
+        return str_replace(['\\', ';', ',', "\n"], ['\\\\', "\;", "\,", '\\n'], $text);
+    }
 
-        return $text;
+    /**
+     * @param Collection  $submissions
+     * @param Dealer|null $fixedDealer
+     *
+     * @return array
+     */
+    private function mapRowsAndTotal(Collection $submissions, ?Dealer $fixedDealer = null): array
+    {
+        $rows = $submissions->map(function (Submission $r) use ($fixedDealer) {
+            return [
+                $r->id,
+                optional($r->created_at)->format('Y-m-d H:i:s'),
+                $fixedDealer?->name ?? $r->dealer?->name,
+                $r->event_id,
+                $r->full_name,
+                $r->email,
+                $r->phone,
+                (int) $r->guest_count,
+                $r->wants_appointment ? 1 : 0,
+                optional($r->know_your_car_date)->format('Y-m-d'),
+                optional($r->vehicle_purchased)->format('Y-m-d'),
+                $r->notes,
+            ];
+        });
+
+        $total = (int) $submissions->sum(fn ($r) => (int) $r->guest_count);
+
+        return [$rows, $total];
     }
 }
