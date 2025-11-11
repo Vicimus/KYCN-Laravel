@@ -136,9 +136,12 @@
 
                     <div class="col-md-4">
                         <label class="fs-md" for="vehicle_purchased">Vehicle Purchased</label>
-                        <input id="vehicle_purchased" name="vehicle_purchased" type="date"
+                        <input id="vehicle_purchased"
+                               name="vehicle_purchased"
+                               type="date"
                                class="form-control form-control-sm"
-                               value="{{ old('vehicle_purchased') }}">
+                               value="{{ old('vehicle_purchased') }}"
+                               max="{{ now()->toDateString() }}">
                     </div>
                 </div>
 

@@ -47,7 +47,7 @@ class PublicFormController extends Controller
             'number_of_attendees' => 'required|in:1,2',
             'email' => 'required|email',
             'phone' => 'required|string|max:30',
-            'vehicle_purchased' => 'nullable|date',
+            'vehicle_purchased' => 'nullable|date|before_or_equal:today',
             'know_your_car_date' => 'nullable|date',
         ]);
 
@@ -155,6 +155,7 @@ class PublicFormController extends Controller
 
         return redirect()
             ->route('public.form', $qs)
-            ->with('success', 'Your Registration has Been Received');
+            ->with('success', true)
+            ->with('success_date', $selectedKycnDate?->format('l, F jS, Y'));
     }
 }

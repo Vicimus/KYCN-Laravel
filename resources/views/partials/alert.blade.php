@@ -1,7 +1,13 @@
 @if (session('success') && !$errors->any())
+    @php
+        $successDate = session('success_date');
+    @endphp
     <div class="alert alert-success shadow-sm p-4 mb-4 text-center set-max-width">
         <div class="fs-5 fw-bold text-uppercase">Registration Received</div>
-        <div class="fs-6 mt-1">Thanks! We’ll be in touch with the details shortly.</div>
+        <div class="fs-6 mt-1">
+            {!! 'Thanks! We have received your registration' .
+                ($successDate ? ' and look forward to seeing you on <strong>' . e($successDate) . '</strong>.' : '.') !!}
+        </div>
     </div>
 @endif
 
