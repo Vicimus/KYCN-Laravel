@@ -57,6 +57,7 @@ class DealerController extends Controller
     public function show(Request $request, Dealer $dealer): View
     {
         $rowsQuery = Submission::where('dealer_id', $dealer->id)
+            ->orderByRaw('know_your_car_date IS NULL')
             ->orderBy('know_your_car_date')
             ->orderBy('last_name')
             ->orderBy('first_name');

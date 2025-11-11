@@ -94,8 +94,8 @@
                                 </a>
                             </td>
                             <td>
-                                <span class="fs-md text-secondary">
-                                    {{ $d->know_your_car_date?->format('F jS, Y') }}
+                                <span class="fs-md text-secondary" title="{{ $d->know_your_car_date?->toDateString() }}">
+                                    {{ $d->know_your_car_date?->format('F jS, Y') ?? '—' }}
                                 </span>
                             </td>
                             <td class="text-end">

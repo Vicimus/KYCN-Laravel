@@ -11,9 +11,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Random\RandomException;
+use Throwable;
 
 class PublicFormController extends Controller
 {
+    /**
+     * @param Request $request
+     *
+     * @return View
+     */
     public function show(Request $request): View
     {
         $code = (string) $request->query('d', '');
@@ -36,7 +42,12 @@ class PublicFormController extends Controller
     }
 
     /**
+     * @param Request $request
+     *
+     * @return RedirectResponse
+     *
      * @throws RandomException
+     * @throws Throwable
      */
     public function store(Request $request): RedirectResponse
     {
@@ -126,8 +137,8 @@ class PublicFormController extends Controller
                 'meta_json' => json_encode($request->all(), JSON_UNESCAPED_SLASHES),
                 'fingerprint' => $fingerprint,
             ]);
-        } catch (\Throwable $e) {
-            if ((string) $e->getCode() == '23000') {
+        } catch (Throwable $e) {
+            if ((string) $e->getCode() === '23000') {
                 return redirect()
                     ->route('public.form', $qs)
                     ->with('info', 'We have already received your registration')
@@ -145,7 +156,7 @@ class PublicFormController extends Controller
 
         try {
             SubmissionNotifier::notifySuccess($submission);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             SubmissionNotifier::notifyFailure([
                 'source' => 'public.form.store',
                 'submission_id' => $submission->id,
