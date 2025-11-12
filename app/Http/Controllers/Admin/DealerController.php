@@ -209,14 +209,15 @@ class DealerController extends Controller
         }
 
         if (Str::startsWith($value, ['http://', 'https://', '//'])) {
-            $value = preg_replace('#^http://#i', 'https://', $value);
             if (Str::startsWith($value, '//')) {
-                $value = 'https:' . $value;
+                $value = (request()->isSecure() ? 'https:' : 'http:') . $value;
             }
             return $value;
         }
 
-        return secure_url(ltrim($value, '/'));
+        $path = ltrim($value, '/');
+
+        return request()->isSecure() ? secure_url($path) : url($path);
     }
 
     /**

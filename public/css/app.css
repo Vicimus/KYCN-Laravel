@@ -113,9 +113,13 @@ nav ul.pagination {
 }
 
 .round-dealer-logo {
+    align-items: center;
     background-color: #FFF;
-    border: 0.25rem solid var(--bs-border-color);
+    /*border: thin solid var(--bs-border-color);*/
     border-radius: 50%;
+    box-shadow: var(--bs-box-shadow-sm);
+    display: flex;
+    justify-content: center;
     overflow: hidden;
 }
 
@@ -130,9 +134,9 @@ nav ul.pagination {
 }
 
 .round-dealer-logo img {
-    height: 100%;
+    height: 90%;
     object-fit: contain;
-    width: 100%;
+    width: 90%;
 }
 
 .rsvp-form-logo {
