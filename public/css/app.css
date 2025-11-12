@@ -112,14 +112,35 @@ nav ul.pagination {
     border-right: thin solid var(--bs-border-color);
 }
 
-.table-dealer-logo {
-    max-height: 34px;
-    max-width: 180px;
+.round-dealer-logo {
+    background-color: #FFF;
+    border: 0.25rem solid var(--bs-border-color);
+    border-radius: 50%;
+    overflow: hidden;
 }
 
+.round-dealer-logo img {
+    height: calc(50px - 0.5rem);
+    object-fit: contain;
+    width: calc(50px - 0.5rem);
+}
+
+/* CHECEKXOAskdok*/
 .dealer-form-logo {
     max-height: 100px;
     max-width: 500px;
+}
+
+.rsvp-form-logo {
+    height: 42px;
+    width: 285px;
+}
+
+.rsvp-form-logo img {
+    height: 100%;
+    object-fit: contain;
+    object-position: left center;
+    width: 100%;
 }
 
 .form-check-input:checked {

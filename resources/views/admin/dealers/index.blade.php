@@ -1,58 +1,50 @@
-@php
-    use Illuminate\Support\Str;
-@endphp
-
 @extends('layouts.app')
 
 @section('title', 'Dealerships')
 
 @section('content')
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
-        <div class="p-3 d-flex justify-content-between flex-column flex-lg-row gap-3 w-100">
-            <div class="fw-bold">View Dealerships</div>
-
-            <div class="d-flex">
-                <div class="d-flex flex-column gap-1">
-                    <div class="d-flex align-items-end gap-2">
-                        <input type="text" class="form-control form-control-sm"
-                               name="q" value="{{ $q }}" placeholder="Search dealers...">
-                        <div class="btn-group" role="group">
-                            <button id="page-submit-button"
-                                    class="btn btn-sm btn-primary"
-                                    title="Apply Filters"
-                            >
-                                <i class="fas fa-filter"></i>
-                            </button>
-                            <button id="page-reset-button"
-                                    class="btn btn-sm btn-outline-secondary"
-                                    title="Clear"
-                            >
-                                <i class="fas fa-rotate-left"></i>
-                            </button>
-                        </div>
+        <div class="p-3 d-flex justify-content-between flex-column flex-lg-row gap-3 w-100 align-items-start">
+            <div class="d-flex flex-row align-items-end gap-2">
+                <div class="d-flex align-items-end gap-2">
+                    <input type="text" class="form-control form-control-sm"
+                           name="q" value="{{ $q }}" placeholder="Search dealers...">
+                    <div class="btn-group" role="group">
+                        <button id="page-submit-button"
+                                class="btn btn-sm btn-primary"
+                                title="Apply Filters"
+                        >
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button id="page-reset-button"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Clear"
+                        >
+                            <i class="fas fa-rotate-left"></i>
+                        </button>
                     </div>
-
-                    @if(!empty($q))
-                        <div class="text-secondary fs-md text-end">
-                            Showing {{ $dealers->total() }} result(s) for “{{ $q }}”
-                        </div>
-                    @endif
                 </div>
 
-                <div class="btn-group ps-2 ms-2 border-start rounded-0" role="group">
-                    <a href="{{ route('admin.export.all.xlsx', request()->query()) }}"
-                       class="btn btn-sm btn-outline-primary"
-                       title="Export Excel (All)"
-                    >
-                        <i class="fas fa-file-excel"></i>
-                    </a>
-                    <a href="{{ route('admin.export.all.ics', request()->query()) }}"
-                       class="btn btn-sm btn-outline-primary"
-                       title="Add to Calendar (All)"
-                    >
-                        <i class="fas fa-calendar-plus"></i>
-                    </a>
-                </div>
+                @if(!empty($q))
+                    <div class="text-secondary fs-md text-end">
+                        Showing {{ $dealers->total() }} result(s) for “{{ $q }}”
+                    </div>
+                @endif
+            </div>
+
+            <div class="btn-group" role="group">
+                <a href="{{ route('admin.export.all.xlsx', request()->query()) }}"
+                   class="btn btn-sm btn-outline-primary"
+                   title="Export Excel (All)"
+                >
+                    <i class="fas fa-file-excel"></i>
+                </a>
+                <a href="{{ route('admin.export.all.ics', request()->query()) }}"
+                   class="btn btn-sm btn-outline-primary"
+                   title="Add to Calendar (All)"
+                >
+                    <i class="fas fa-calendar-plus"></i>
+                </a>
             </div>
         </div>
 
@@ -61,10 +53,9 @@
                 <table class="table kycn-table sm-table m-0 text-nowrap">
                     <thead>
                     <tr>
-                        <th>Dealership Name</th>
-                        <th>Logo</th>
-                        <th>URL</th>
+                        <th>Dealership</th>
                         <th>Event Date</th>
+                        <th>URL</th>
                         <th class="text-end">Actions</th>
                     </tr>
                     </thead>
@@ -75,57 +66,83 @@
                         @endphp
                         <tr>
                             <td>
-                                <a href="{{ route('admin.dealers.show', $d) }}"
-                                   class="text-decoration-none fw-bold"
-                                   title="View {{ $d->name }} Details"
-                                >
-                                    {{ $d->name }}
-                                </a>
-                            </td>
-                            <td>
-                                <img src="{{ $d->dealership_logo_url ?? asset('images/placeholder.png') }}"
-                                     alt="{{ $d->name }} logo"
-                                     class="table-dealer-logo"
-                                />
-                            </td>
-                            <td class="text-break">
-                                <a href="{{ $url }}" class="text-decoration-none fw-bold">
-                                    {{ Str::limit($url, 40) }}
-                                </a>
-                            </td>
-                            <td>
-                                <span class="fs-md text-secondary" title="{{ $d->know_your_car_date?->toDateString() }}">
-                                    {{ $d->know_your_car_date?->format('F jS, Y') ?? '—' }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a href="{{ route('admin.dealers.edit', $d) }}"
-                                   class="btn btn-sm btn-outline-secondary me-3"
-                                   title="Edit Dealer"
-                                >
-                                    <i class="fas fa-user-pen"></i>
-                                </a>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="round-dealer-logo">
+                                        <img src="{{ $d->dealership_logo_url ?? asset('images/placeholder.png') }}"
+                                             alt="{{ $d->name }} logo"
+                                        />
+                                    </div>
 
-                                <div class="btn-group" role="group">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            data-copy-url="{{ $url }}"
-                                            title="Copy Dealer URL"
+                                    <a href="{{ route('admin.dealers.show', $d) }}"
+                                       class="text-decoration-none fw-bold"
+                                       title="View Dealer Details"
                                     >
-                                        <i class="far fa-copy"></i>
-                                    </button>
-                                    <a href="{{ route('admin.dealers.export', ['dealer' => $d->portal_token]) }}"
-                                       class="btn btn-sm btn-outline-secondary"
-                                       title="Export Excel"
-                                    >
-                                        <i class="fas fa-file-excel"></i>
+                                        {{ $d->name }}
                                     </a>
-                                    <a href="{{ route('admin.dealers.ics', ['dealer' => $d->portal_token]) }}"
-                                       class="btn btn-sm btn-outline-secondary"
-                                       title="Add to Calendar"
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <div class="d-flex flex-column align-items-start"
+                                     title="{{ $d->know_your_car_date?->toDateString() }}"
+                                >
+                                    <span class="fs-sm text-secondary">
+                                        {{ $d->know_your_car_date?->format('l') }}
+                                    </span>
+                                    <strong class="fs-md">
+                                        {{ $d->know_your_car_date?->format('F jS, Y') ?? '—' }}
+                                    </strong>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                @if ($url)
+                                    <a href="{{ $url }}"
+                                       class="text-decoration-none fs-md fw-bold"
+                                       title="Add more registrations for the Dealer"
                                     >
-                                        <i class="fas fa-calendar-plus"></i>
+                                        {{ $url }}
                                     </a>
+                                @else
+                                    <span class="text-secondary fs-md">—</span>
+                                @endif
+                            </td>
+                            <td class="text-end align-middle">
+                                <div class="d-flex gap-3 justify-content-end">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.dealers.show', $d) }}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View Dealer Details"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.dealers.edit', $d) }}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Edit Dealer"
+                                        >
+                                            <i class="fas fa-user-pen"></i>
+                                        </a>
+                                    </div>
+
+                                    <div class="btn-group" role="group">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                data-copy-url="{{ $url }}"
+                                                title="Copy Dealer URL"
+                                        >
+                                            <i class="far fa-copy"></i>
+                                        </button>
+                                        <a href="{{ route('admin.dealers.export', ['dealer' => $d->portal_token]) }}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Export Excel"
+                                        >
+                                            <i class="fas fa-file-excel"></i>
+                                        </a>
+                                        <a href="{{ route('admin.dealers.ics', ['dealer' => $d->portal_token]) }}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Add to Calendar"
+                                        >
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </td>
                         </tr>

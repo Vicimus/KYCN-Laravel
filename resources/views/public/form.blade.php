@@ -14,11 +14,13 @@
     <div class="card shadow-sm set-max-width">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-3 mb-1">
-                <img src="{{ $logo }}"
-                     alt="{{ $dealer?->name ?? 'Dealership' }} logo"
-                     style="height: 42px"
-                     loading="lazy"
-                     referrerpolicy="no-referrer"/>
+                <div class="rsvp-form-logo">
+                    <img src="{{ $logo }}"
+                         id="rsvpFormLogoImage"
+                         alt="{{ $dealer?->name ?? 'Dealership' }} logo"
+                         loading="lazy"
+                         referrerpolicy="no-referrer"/>
+                </div>
                 <h3 class="m-0">Know Your Car Night</h3>
             </div>
             <div id="kycnDateDisplay"
@@ -39,7 +41,7 @@
                 <input type="date"
                        class="d-none"
                        name="know_your_car_date"
-                       id="know_your_car_date_input"
+                       id="knowYourCarDateInput"
                        value="{{ optional($dealer?->know_your_car_date)->toDateString() }}">
 
                 <div class="mb-3">
@@ -56,6 +58,7 @@
                             @foreach($dealerOptions as $d)
                                 <option value="{{ $d->name }}"
                                         data-date="{{ optional($d->know_your_car_date)->toDateString() }}"
+                                        data-logo="{{ $d->dealership_logo_url ?? $logo }}"
                                         {{ old('dealership_name') === $d->name ? 'selected' : '' }}>
                                     {{ $d->name }} — {{ optional($d->know_your_car_date)->format('M j, Y') }}
                                 </option>
@@ -78,7 +81,7 @@
                 </div>
 
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fs-md" for="first_name">First Name <span class="text-danger">*</span></label>
                         <input id="first_name" name="first_name"
                                class="form-control form-control-sm @error('first_name') is-invalid @enderror"
@@ -86,7 +89,7 @@
                         @error('first_name')
                         <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="fs-md" for="last_name">Last Name <span class="text-danger">*</span></label>
                         <input id="last_name" name="last_name"
                                class="form-control form-control-sm @error('last_name') is-invalid @enderror"
@@ -94,20 +97,17 @@
                         @error('last_name')
                         <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-md-4">
                         <label class="fs-md">Number of Attendees (Including Yourself) <span
                                     class="text-danger">*</span></label><br>
                         <div class="btn-group" role="group" aria-label="Number of attendees">
                             <input type="radio" class="btn-check" name="number_of_attendees" id="a1" value="1"
                                    {{ old('number_of_attendees', '1') == '1' ? 'checked' : '' }} required>
-                            <label class="btn btn-sm btn-outline-secondary" for="a1">1</label>
+                            <label class="btn btn-sm btn-outline-primary" for="a1">1</label>
 
                             <input type="radio" class="btn-check" name="number_of_attendees" id="a2" value="2"
                                    {{ old('number_of_attendees') == '2' ? 'checked' : '' }} required>
-                            <label class="btn btn-sm btn-outline-secondary" for="a2">2</label>
+                            <label class="btn btn-sm btn-outline-primary" for="a2">2</label>
                         </div>
                     </div>
                 </div>
@@ -176,8 +176,9 @@
                 return;
             }
 
+            const logoEl = document.getElementById('rsvpFormLogoImage');
             const dateDisplay = document.getElementById('kycnDateDisplay');
-            const eventDate = document.getElementById('know_your_car_date_input');
+            const eventDate = document.getElementById('knowYourCarDateInput');
 
             const defaultText = dateDisplay.dataset.defaultText || dateDisplay.textContent || '';
             const locale = document.documentElement.lang || 'en-US';
@@ -213,8 +214,18 @@
                 }
             }
 
-            select.addEventListener('change', updateDateFromSelection);
+            function updateLogoFromSelection() {
+                const opt = select.options[select.selectedIndex];
+
+                logoEl.src = opt?.dataset?.logo?.trim?.() || @json($logo);
+            }
+
+            select.addEventListener('change', () => {
+                updateDateFromSelection();
+                updateLogoFromSelection();
+            });
             updateDateFromSelection();
+            updateLogoFromSelection();
         });
     </script>
 @endpush
