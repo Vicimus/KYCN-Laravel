@@ -9,8 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -36,19 +34,36 @@ class DealerController extends Controller
         $allowed = [10, 25, $min, 100];
         $perPage = in_array($request->integer('per_page', $min), $allowed, true) ? $request->integer('per_page', $min) : $min;
 
+        $orderParam = $request->query('order', 'name');
+        $direction = str_starts_with($orderParam, '-') ? 'desc' : 'asc';
+        $sort = ltrim($orderParam, '-');
+        $sortMap = [
+            'name' => 'name',
+            'event_date' => 'know_your_car_date',
+        ];
+
+        $column = $sortMap[$sort] ?? 'name';
+
         $dealers = Dealer::query()
-            ->when($q !== '', function ($query) use ($q) {
+            ->when($q !== '', function ($query) use ($q, $column) {
+                if ($column === 'name') {
+                    $query->orderByRaw('CASE WHEN LOWER(name) LIKE ? THEN 0 ELSE 1 END', [strtolower($q) . '%']);
+                }
                 $query->where(function ($qq) use ($q) {
                     $qq->where('name', 'like', "%{$q}%")
                         ->orWhere('code', 'like', "%{$q}%");
                 });
             })
-            ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', [$q !== '' ? "{$q}%" : '%'])
+            ->when($column === 'know_your_car_date', fn($q2) => $q2->orderByRaw('know_your_car_date IS NULL'))
+            ->when($column === 'name',
+                fn($q2) => $q2->orderByRaw('LOWER(name) ' . $direction),
+                fn($q2) => $q2->orderBy($column, $direction)
+            )
             ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('admin.dealers.index', compact('dealers', 'q'));
+        return view('admin.dealers.index', compact('dealers', 'q', 'orderParam'));
     }
 
     public function edit(Dealer $dealer): View
@@ -61,11 +76,7 @@ class DealerController extends Controller
 
     public function show(Request $request, Dealer $dealer): View
     {
-        $rowsQuery = Submission::where('dealer_id', $dealer->id)
-            ->orderByRaw('know_your_car_date IS NULL')
-            ->orderBy('know_your_car_date')
-            ->orderBy('last_name')
-            ->orderBy('first_name');
+        $rowsQuery = Submission::where('dealer_id', $dealer->id);
 
         $startDate = null;
         $endDate = null;
@@ -90,14 +101,43 @@ class DealerController extends Controller
 
         $q = trim((string) $request->query('q', ''));
         if ('' !== $q) {
-            $like = sprintf('%s%s%s', '%', $q, '%');
+            $like = '%'.strtolower($q).'%';
             $rowsQuery->where(function ($query) use ($like) {
-                $query->where('first_name', 'like', $like)
-                    ->orWhere('last_name', 'like', $like)
-                    ->orWhereRaw("concat_ws(' ', first_name, last_name) like ?", [$like])
-                    ->orWhere('email', 'like', $like)
-                    ->orWhere('notes', 'like', $like);
+                $query->whereRaw('LOWER(first_name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(last_name)  LIKE ?', [$like])
+                    ->orWhereRaw("LOWER(concat_ws(' ', first_name, last_name)) LIKE ?", [$like])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(notes) LIKE ?', [$like]);
             });
+        }
+
+        $orderParam = $request->query('order', 'event_date');
+        $direction = str_starts_with($orderParam, '-') ? 'desc' : 'asc';
+        $sort = ltrim($orderParam, '-');
+
+        switch ($sort) {
+            case 'name':
+                $rowsQuery->orderByRaw('LOWER(last_name) '  . $direction)
+                    ->orderByRaw('LOWER(first_name) ' . $direction);
+                break;
+            case 'guest_count':
+                $rowsQuery->orderBy('guest_count', $direction);
+                break;
+            case 'appointment':
+                $rowsQuery->orderBy('wants_appointment', $direction);
+                break;
+            case 'notes':
+                $rowsQuery->orderByRaw('LOWER(notes) ' . $direction)
+                    ->orderByRaw('LOWER(last_name)')
+                    ->orderByRaw('LOWER(first_name)');
+                break;
+            case 'event_date':
+            default:
+                $rowsQuery->orderByRaw('know_your_car_date IS NULL')
+                    ->orderBy('know_your_car_date', $direction)
+                    ->orderByRaw('LOWER(last_name)')
+                    ->orderByRaw('LOWER(first_name)');
+                break;
         }
 
         $rows = $rowsQuery->get();
@@ -108,6 +148,7 @@ class DealerController extends Controller
             'startDate',
             'endDate',
             'q',
+            'orderParam',
         ));
     }
 

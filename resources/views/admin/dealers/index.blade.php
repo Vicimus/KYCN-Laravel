@@ -53,8 +53,8 @@
                 <table class="table kycn-table sm-table m-0 text-nowrap">
                     <thead>
                     <tr>
-                        <th>Dealership</th>
-                        <th>Event Date</th>
+                        <th>{!! sortLink('name', 'Dealership', $orderParam) !!}</th>
+                        <th>{!! sortLink('event_date', 'Event Date', $orderParam) !!}</th>
                         <th>URL</th>
                         <th class="text-end">Actions</th>
                     </tr>

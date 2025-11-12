@@ -88,10 +88,10 @@
                 <table class="table kycn-table sm-table m-0 text-nowrap" id="dealerSubmissionsTable">
                     <thead>
                     <tr>
-                        <th class="cursor-pointer" data-sort-key="know_your_car_date" data-sort-type="date">Event Date</th>
-                        <th class="cursor-pointer" data-sort-key="name">Name</th>
-                        <th class="cursor-pointer text-center" data-sort-key="guest_count" data-sort-type="number">Guests</th>
-                        <th class="cursor-pointer text-center" data-sort-key="appointment">Appt?</th>
+                        <th>{!! sortLink('event_date', 'Event Date', $orderParam, null, ['dealer' => $dealer]) !!}</th>
+                        <th>{!! sortLink('name', 'Name', $orderParam, null, ['dealer' => $dealer]) !!}</th>
+                        <th class="text-center">{!! sortLink('guest_count', 'Guests', $orderParam, null, ['dealer' => $dealer]) !!}</th>
+                        <th class="text-center">{!! sortLink('appointment', 'Appointment', $orderParam, null, ['dealer' => $dealer]) !!}</th>
                         <th data-sort-key="notes">Notes</th>
                     </tr>
                     </thead>
@@ -163,65 +163,49 @@
             },
         );
 
-        const table = document.getElementById('dealerSubmissionsTable');
-        // const filterInput = document.getElementById('submissionFilter');
-        if (!table) {
-            return;
-        }
-
-        const tbody = table.querySelector('tbody');
-
-        // function filterRows() {
-        //     const query = (filterInput?.value || '').toLowerCase();
-        //     tbody.querySelectorAll('tr').forEach((row) => {
-        //         if (!query) {
-        //             row.classList.remove('d-none');
-        //             return;
-        //         }
-        //
-        //         const text = row.textContent.toLowerCase();
-        //         row.classList.toggle('d-none', !text.includes(query));
-        //     });
+        // const table = document.getElementById('dealerSubmissionsTable');
+        // if (!table) {
+        //     return;
         // }
-
-        // filterInput?.addEventListener('input', filterRows);
-
-        table.querySelectorAll('th[data-sort-key]').forEach((header) => {
-            header.style.cursor = 'pointer';
-            header.addEventListener('click', () => {
-                const sortKey = header.dataset.sortKey;
-                const sortType = header.dataset.sortType || 'string';
-                const currentDir = header.dataset.sortDir === 'asc' ? 'desc' : 'asc';
-                header.dataset.sortDir = currentDir;
-
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-
-                rows.sort((a, b) => {
-                    const cellA = a.querySelector(`[data-column="${sortKey}"]`);
-                    const cellB = b.querySelector(`[data-column="${sortKey}"]`);
-                    const valueA = cellA?.dataset.value || '';
-                    const valueB = cellB?.dataset.value || '';
-
-                    if (sortType === 'number') {
-                        return currentDir === 'asc'
-                            ? Number(valueA) - Number(valueB)
-                            : Number(valueB) - Number(valueA);
-                    }
-
-                    if (sortType === 'date') {
-                        return currentDir === 'asc'
-                            ? Number(valueA) - Number(valueB)
-                            : Number(valueB) - Number(valueA);
-                    }
-
-                    return currentDir === 'asc'
-                        ? valueA.localeCompare(valueB)
-                        : valueB.localeCompare(valueA);
-                });
-
-                rows.forEach((row) => tbody.appendChild(row));
-            });
-        });
+        //
+        // const tbody = table.querySelector('tbody');
+        //
+        // table.querySelectorAll('th[data-sort-key]').forEach((header) => {
+        //     header.style.cursor = 'pointer';
+        //     header.addEventListener('click', () => {
+        //         const sortKey = header.dataset.sortKey;
+        //         const sortType = header.dataset.sortType || 'string';
+        //         const currentDir = header.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+        //         header.dataset.sortDir = currentDir;
+        //
+        //         const rows = Array.from(tbody.querySelectorAll('tr'));
+        //
+        //         rows.sort((a, b) => {
+        //             const cellA = a.querySelector(`[data-column="${sortKey}"]`);
+        //             const cellB = b.querySelector(`[data-column="${sortKey}"]`);
+        //             const valueA = cellA?.dataset.value || '';
+        //             const valueB = cellB?.dataset.value || '';
+        //
+        //             if (sortType === 'number') {
+        //                 return currentDir === 'asc'
+        //                     ? Number(valueA) - Number(valueB)
+        //                     : Number(valueB) - Number(valueA);
+        //             }
+        //
+        //             if (sortType === 'date') {
+        //                 return currentDir === 'asc'
+        //                     ? Number(valueA) - Number(valueB)
+        //                     : Number(valueB) - Number(valueA);
+        //             }
+        //
+        //             return currentDir === 'asc'
+        //                 ? valueA.localeCompare(valueB)
+        //                 : valueB.localeCompare(valueA);
+        //         });
+        //
+        //         rows.forEach((row) => tbody.appendChild(row));
+        //     });
+        // });
     });
 </script>
 @endpush

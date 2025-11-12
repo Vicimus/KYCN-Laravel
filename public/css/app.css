@@ -115,7 +115,6 @@ nav ul.pagination {
 .round-dealer-logo {
     align-items: center;
     background-color: #FFF;
-    /*border: thin solid var(--bs-border-color);*/
     border-radius: 50%;
     box-shadow: var(--bs-box-shadow-sm);
     display: flex;
