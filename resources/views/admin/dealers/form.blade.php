@@ -12,7 +12,7 @@
 @section('title', $title)
 
 @section('content')
-    <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 set-max-width">
+    <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100">
         <div class="p-3">
             <div class="fw-bold">{{ $title }}</div>
         </div>
@@ -23,35 +23,37 @@
                 @method('PUT')
             @endif
 
-            <div class="mb-3">
-                <label for="dealership_name" class="fs-md">Dealership Name</label>
-                <input name="name"
-                       id="dealership_name"
-                       class="form-control form-control-sm"
-                       value="{{ old('name', $isEdit ? $dealer->name : '') }}"
-                       autocomplete="off"
-                       required>
-                @error('name')
-                <div class="text-danger fs-md">{{ $message }}</div> @enderror
-            </div>
-
-            @if($isEdit)
-                <div class="mb-3">
-                    <span class="fs-md d-block mb-1">Current Logo</span>
-                    @if($dealer->dealership_logo_url)
-                        <img src="{{ $dealer->dealership_logo_url }}"
-                             alt="{{ $dealer->name }} Logo"
-                             class="dealer-form-logo"
-                        />
-                        <div class="form-check mt-1">
-                            <input class="form-check-input" type="checkbox" value="1" id="remove_logo" name="remove_logo">
-                            <label class="form-check-label fs-md" for="remove_logo">Remove current logo</label>
+            <div class="row g-3 mb-3">
+                @if($isEdit)
+                    <div class="col-md-2">
+                        <div class="d-flex flex-column">
+                            <span class="fs-md d-block mb-1">Current Logo</span>
+                            @if($dealer->dealership_logo_url)
+                                <div class="round-dealer-logo bigger">
+                                    <img src="{{ $dealer->dealership_logo_url }}" alt="{{ $dealer->name }} Logo"/>
+                                </div>
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" value="1" id="remove_logo" name="remove_logo">
+                                    <label class="form-check-label fs-md" for="remove_logo">Remove current logo</label>
+                                </div>
+                            @else
+                                <span class="badge text-bg-secondary fs-md">No Logo</span>
+                            @endif
                         </div>
-                    @else
-                        <span class="text-secondary">No logo</span>
-                    @endif
+                    </div>
+                @endif
+                <div class="col-md-{{ $isEdit ? '10' : '12' }}">
+                    <label for="dealership_name" class="fs-md">Dealership Name</label>
+                    <input name="name"
+                           id="dealership_name"
+                           class="form-control form-control-sm"
+                           value="{{ old('name', $isEdit ? $dealer->name : '') }}"
+                           autocomplete="off"
+                           required>
+                    @error('name')
+                    <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>
-            @endif
+            </div>
 
             <div class="row g-3">
                 <div class="col-md-4">
@@ -91,18 +93,11 @@
             </div>
 
             <div class="d-flex justify-content-between mt-3">
-                <a href="{{ route('admin.dealers.index') }}"
-                   class="btn btn-sm btn-secondary"
-                   title="Back to Dealers"
-                >
-                    <i class="fas fa-chevron-left"></i>
+                <a href="{{ route('admin.dealers.index') }}" class="btn btn-sm btn-secondary">
+                    Back to Dealers
                 </a>
 
-                <button class="btn btn-sm btn-primary"
-                        title="{{ $isEdit ? 'Save Changes' : 'Create Dealership' }}"
-                >
-                    <i class="fas fa-floppy-disk"></i>
-                </button>
+                <button class="btn btn-sm btn-primary">{{ $isEdit ? 'Save Changes' : 'Create Dealership' }}</button>
             </div>
         </form>
     </div>

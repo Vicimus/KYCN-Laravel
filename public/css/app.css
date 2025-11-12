@@ -119,16 +119,20 @@ nav ul.pagination {
     overflow: hidden;
 }
 
-.round-dealer-logo img {
-    height: calc(50px - 0.5rem);
-    object-fit: contain;
-    width: calc(50px - 0.5rem);
+.round-dealer-logo:not(.bigger) {
+    height: 50px;
+    width: 50px;
 }
 
-/* CHECEKXOAskdok*/
-.dealer-form-logo {
-    max-height: 100px;
-    max-width: 500px;
+.round-dealer-logo.bigger {
+    height: 100px;
+    width: 100px;
+}
+
+.round-dealer-logo img {
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
 }
 
 .rsvp-form-logo {

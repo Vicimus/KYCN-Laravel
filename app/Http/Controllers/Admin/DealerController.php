@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -30,6 +32,9 @@ class DealerController extends Controller
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
+        $min = 50;
+        $allowed = [10, 25, $min, 100];
+        $perPage = in_array($request->integer('per_page', $min), $allowed, true) ? $request->integer('per_page', $min) : $min;
 
         $dealers = Dealer::query()
             ->when($q !== '', function ($query) use ($q) {
@@ -40,7 +45,7 @@ class DealerController extends Controller
             })
             ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', [$q !== '' ? "{$q}%" : '%'])
             ->orderBy('name')
-            ->paginate(50)
+            ->paginate($perPage)
             ->withQueryString();
 
         return view('admin.dealers.index', compact('dealers', 'q'));
