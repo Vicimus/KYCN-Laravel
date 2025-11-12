@@ -38,9 +38,7 @@
         </div>
 
         <div class="border-top px-3 py-3">
-            <form method="get"
-                  action="{{ route('admin.dealers.show', $dealer) }}"
-                  class="row g-3 align-items-end">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label for="start_date" class="fs-md">Start Date</label>
                     <input type="date"
@@ -63,22 +61,26 @@
                     <label for="submissionFilter" class="fs-md">Search Submissions</label>
                     <input type="search"
                            id="submissionFilter"
+                           name="q"
                            class="form-control form-control-sm"
+                           value="{{ request('q') }}"
+                           autocomplete="off"
                            placeholder="Search name, email, notes...">
                 </div>
 
                 <div class="col-md-2 d-flex justify-content-md-end">
                     <div class="btn-group">
-                        <button class="btn btn-sm btn-primary" type="submit" title="Apply Filter">
+                        <button id="page-submit-button"
+                                class="btn btn-sm btn-primary"
+                                type="submit" title="Apply Filter">
                             <i class="fas fa-filter"></i>
                         </button>
-                        <a href="{{ route('admin.dealers.show', $dealer) }}"
-                           class="btn btn-sm btn-outline-secondary" title="Clear">
+                        <a id="page-reset-button" class="btn btn-sm btn-outline-secondary" title="Clear">
                             <i class="fas fa-rotate-left"></i>
                         </a>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
 
         @if($rows->count() > 0)
@@ -152,28 +154,37 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        initSubmit(
+            ['start_date', 'end_date', 'q'],
+            {
+                autoSubmitNames: ['start_date', 'end_date'],
+                searchSubmitNames: ['q'],
+                swapPairs: ['start_date', 'end_date'],
+            },
+        );
+
         const table = document.getElementById('dealerSubmissionsTable');
-        const filterInput = document.getElementById('submissionFilter');
+        // const filterInput = document.getElementById('submissionFilter');
         if (!table) {
             return;
         }
 
         const tbody = table.querySelector('tbody');
 
-        function filterRows() {
-            const query = (filterInput?.value || '').toLowerCase();
-            tbody.querySelectorAll('tr').forEach((row) => {
-                if (!query) {
-                    row.classList.remove('d-none');
-                    return;
-                }
+        // function filterRows() {
+        //     const query = (filterInput?.value || '').toLowerCase();
+        //     tbody.querySelectorAll('tr').forEach((row) => {
+        //         if (!query) {
+        //             row.classList.remove('d-none');
+        //             return;
+        //         }
+        //
+        //         const text = row.textContent.toLowerCase();
+        //         row.classList.toggle('d-none', !text.includes(query));
+        //     });
+        // }
 
-                const text = row.textContent.toLowerCase();
-                row.classList.toggle('d-none', !text.includes(query));
-            });
-        }
-
-        filterInput?.addEventListener('input', filterRows);
+        // filterInput?.addEventListener('input', filterRows);
 
         table.querySelectorAll('th[data-sort-key]').forEach((header) => {
             header.style.cursor = 'pointer';

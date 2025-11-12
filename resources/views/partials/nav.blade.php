@@ -22,31 +22,27 @@
 
         <div class="ms-auto d-flex align-items-center">
             @if(!$onPublicForm)
-                <div class="btn-group pe-2 me-2 border-end rounded-0" role="group">
-                    <a class="btn btn-sm btn-outline-primary" href="{{ route('public.form') }}" title="New Register">
-                        <i class="fas fa-rectangle-list"></i>
+                <div class="btn-group pe-3 me-3 border-end rounded-0" role="group">
+                    <a class="btn btn-sm btn-success" href="{{ route('public.form') }}">
+                        New Register
                     </a>
                 </div>
             @endif
 
             @if ($isAdmin)
                 <div class="d-flex">
-                    <div class="btn-group pe-2 me-2 border-end rounded-0" role="group">
+                    <div class="btn-group pe-3 me-3 border-end rounded-0" role="group">
                         @if ((!$onAdminIndex && !$showBackToList) || ($onDealerCreate || $onDealerEdit || $onDealerShow))
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="{{ route('admin.dealers.index') }}"
-                               title="Go to Dealers"
-                            >
-                                <i class="fas fa-clipboard-list"></i>
+                            <a class="btn btn-sm btn-primary" href="{{ route('admin.dealers.index') }}">
+                                Go to Dealers
                             </a>
                         @endif
 
                         @if($onDealerView && (!$onDealerCreate || !$onDealerEdit))
-                            <a class="btn btn-sm btn-outline-primary"
+                            <a class="btn btn-sm btn-primary"
                                href="{{ route('admin.dealers.create') }}"
-                               title="Create a Dealer"
                             >
-                                <i class="fas fa-user-plus"></i>
+                                Create a Dealer
                             </a>
                         @endif
                     </div>

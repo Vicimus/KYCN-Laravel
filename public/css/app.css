@@ -148,6 +148,12 @@ nav ul.pagination {
     border-color: var(--vicimus-blue);
 }
 
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
 @media (width >= 1200px) {
     .kycn-table:not(.sm-table) th,
     .kycn-table:not(.sm-table) td {

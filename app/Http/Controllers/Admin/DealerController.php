@@ -83,6 +83,18 @@ class DealerController extends Controller
             }
         }
 
+        $q = trim((string) $request->query('q', ''));
+        if ('' !== $q) {
+            $like = sprintf('%s%s%s', '%', $q, '%');
+            $rowsQuery->where(function ($query) use ($like) {
+                $query->where('first_name', 'like', $like)
+                    ->orWhere('last_name', 'like', $like)
+                    ->orWhereRaw("concat_ws(' ', first_name, last_name) like ?", [$like])
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('notes', 'like', $like);
+            });
+        }
+
         $rows = $rowsQuery->get();
 
         return view('admin.dealers.show', compact(
@@ -90,6 +102,7 @@ class DealerController extends Controller
             'rows',
             'startDate',
             'endDate',
+            'q',
         ));
     }
 
