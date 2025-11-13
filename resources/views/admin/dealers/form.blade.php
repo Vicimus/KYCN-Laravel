@@ -2,8 +2,6 @@
     $isEdit = ($mode ?? null) === 'edit';
     $title = $isEdit ? 'Edit Dealership' : 'Create Dealership';
     $action = $isEdit ? route('admin.dealers.update', $dealer) : route('admin.dealers.store');
-
-    $previewSrc = old('dealership_logo', $dealer->logo_url ?? null);
 @endphp
 
 @extends('layouts.app')
@@ -29,14 +27,16 @@
                             @include('partials.dealer-logo', ['dealer' => $dealer, 'large' => true])
 
                             <div class="logo-actions btn-group" role="group">
-                                <label for="logo_file" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-upload"></i>
+                                <label for="logo_file"
+                                       class="btn btn-sm btn-primary"
+                                >
+                                    <i class="fas fa-cloud-arrow-up"></i>
                                 </label>
                                 <button type="button"
-                                        class="btn btn-sm btn-outline-secondary {{ (bool) $previewSrc ? '' : 'd-none' }}"
+                                        class="btn btn-sm btn-danger {{ (bool) old('dealership_logo', $dealer->logo_url ?? null) ? '' : 'd-none' }}"
                                         id="clearLogoBtn"
                                 >
-                                    <i class="fas fa-times"></i>
+                                    <i class="fas fa-trash-can"></i>
                                 </button>
                             </div>
                         </div>
