@@ -32,7 +32,7 @@ class PublicFormController extends Controller
             ->orderBy('name')
             ->get();
 
-        $logo = $dealer?->dealership_logo ?: 'https://vicimus.com/wp-content/uploads/2023/08/bumper.svg';
+        $logo = $dealer?->logo_url ?: config('brand.logos.bumper');
 
         return view('public.form', [
             'dealer' => $dealer,

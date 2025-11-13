@@ -21,9 +21,50 @@ class Dealer extends Model
         'know_your_car_date' => 'date',
     ];
 
+    protected $appends = [
+        'logo_url',
+        'initials',
+        'initials_bg',
+    ];
+
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class);
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->dealership_logo_url ?? $this->dealership_logo ?? null;
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        $name = trim((string) ($this->name ?? ''));
+        if ($name === '') {
+            return '—';
+        }
+
+        $clean = preg_replace('/[^\p{L}\p{N}\s\'\-]+/u', '', $name) ?? '';
+        $parts = preg_split('/[\s\-]+/u', $clean, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if (count($parts) >= 2) {
+            $initials = mb_substr($parts[0], 0, 1) . mb_substr($parts[1], 0, 1);
+        } elseif (count($parts) === 1) {
+            $initials = mb_substr($parts[0], 0, 2);
+        } else {
+            $initials = '—';
+        }
+
+        return mb_strtoupper($initials);
+    }
+
+    public function getInitialsBgAttribute(): string
+    {
+        $palette = ['#E9F2FF', '#EAF7F1', '#FFF5E6', '#F3E8FF', '#FFE9EF', '#EAF0FF'];
+        $name = (string) ($this->name ?? '');
+        $idx = hexdec(substr(md5($name), 0, 2)) % count($palette);
+
+        return $palette[$idx];
     }
 
     /**

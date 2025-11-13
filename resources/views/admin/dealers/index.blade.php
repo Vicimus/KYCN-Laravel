@@ -67,9 +67,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="logo-thumb">
-                                        <img src="{{ $d->dealership_logo }}" alt="{{ $d->name }} logo"/>
-                                    </div>
+                                    @include('partials.dealer-logo', ['dealer' => $d])
 
                                     <a href="{{ route('admin.dealers.show', $d) }}"
                                        class="text-decoration-none fw-bold"

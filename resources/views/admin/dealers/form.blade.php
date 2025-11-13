@@ -28,17 +28,7 @@
                     <div class="col-md-2">
                         <div class="d-flex flex-column">
                             <span class="fs-md mb-1">Current Logo</span>
-                            @if($dealer->dealership_logo_url)
-                                <div class="logo-thumb">
-                                    <img src="{{ $dealer->dealership_logo_url }}" alt="{{ $dealer->name }} Logo"/>
-                                </div>
-                                <div class="form-check mt-1">
-                                    <input class="form-check-input" type="checkbox" value="1" id="remove_logo" name="remove_logo">
-                                    <label class="form-check-label fs-md" for="remove_logo">Remove current logo</label>
-                                </div>
-                            @else
-                                <span class="badge text-bg-secondary fs-md">No Logo</span>
-                            @endif
+                            @include('partials.dealer-logo', ['dealer' => $dealer, 'larger' => true])
                         </div>
                     </div>
                 @endif
@@ -86,7 +76,9 @@
                            class="form-control form-control-sm @error('know_your_car_date') is-invalid @enderror"
                            id="kyc_date"
                            name="know_your_car_date"
-                           value="{{ old('know_your_car_date', optional($dealer->know_your_car_date)->format('Y-m-d')) }}">
+                           value="{{ old('know_your_car_date', optional($dealer->know_your_car_date)->format('Y-m-d')) }}"
+                           min="{{ now()->toDateString() }}"
+                    >
                     @error('know_your_car_date')
                     <div class="text-danger fs-md">{{ $message }}</div> @enderror
                 </div>

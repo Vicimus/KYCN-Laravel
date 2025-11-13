@@ -116,9 +116,10 @@ nav ul.pagination {
 }
 
 .logo-thumb {
+    --size: 48px;
+
     align-items: center;
     aspect-ratio: 1 / 1;
-    background: var(--thumb-bg);
     border: thin solid var(--thumb-border);
     border-radius: 50%;
     box-shadow: var(--thumb-shadow);
@@ -127,7 +128,23 @@ nav ul.pagination {
     overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     will-change: transform;
-    width: 48px;
+    width: var(--size);
+}
+
+.logo-thumb.normal {
+    background: var(--thumb-bg);
+}
+
+.logo-thumb.initials {
+    background: var(--initials-bg);
+}
+
+.logo-initials {
+    color: #2b2f36;
+    font-size: calc(var(--size) * 0.42);
+    font-weight: 700;
+    line-height: 1;
+    user-select: none;
 }
 
 .logo-thumb img,
@@ -139,10 +156,6 @@ nav ul.pagination {
     object-fit: contain;
     object-position: center;
     -ms-interpolation-mode: bicubic;
-}
-
-.logo-thumb.lg-thumb {
-    width: 96px;
 }
 
 .rsvp-form-logo {

@@ -58,7 +58,7 @@
                             @foreach($dealerOptions as $d)
                                 <option value="{{ $d->name }}"
                                         data-date="{{ optional($d->know_your_car_date)->toDateString() }}"
-                                        data-logo="{{ $d->dealership_logo_url ?? $logo }}"
+                                        data-logo="{{ $logo }}"
                                         {{ old('dealership_name') === $d->name ? 'selected' : '' }}>
                                     {{ $d->name }} — {{ optional($d->know_your_car_date)->format('M j, Y') }}
                                 </option>

@@ -63,8 +63,11 @@ class DealerController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-
-        return view('admin.dealers.index', compact('dealers', 'q', 'orderParam'));
+        return view('admin.dealers.index', compact(
+            'dealers',
+            'q',
+            'orderParam',
+        ));
     }
 
     public function edit(Dealer $dealer): View
@@ -195,16 +198,10 @@ class DealerController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'dealership_logo' => ['nullable', 'url'],
             'logo_file' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
-            'remove_logo' => ['nullable', 'boolean'],
             'know_your_car_date' => ['nullable', 'date'],
         ]);
 
         $logo = $dealer->dealership_logo;
-
-        if ($request->boolean('remove_logo')) {
-            $this->deleteLogo($logo);
-            $logo = null;
-        }
 
         if ($request->hasFile('logo_file')) {
             $this->deleteLogo($logo);
