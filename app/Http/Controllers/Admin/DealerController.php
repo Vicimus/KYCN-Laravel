@@ -199,15 +199,18 @@ class DealerController extends Controller
             'dealership_logo' => ['nullable', 'url'],
             'logo_file' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
             'know_your_car_date' => ['nullable', 'date'],
+            'remove_logo' => ['nullable', 'boolean'],
         ]);
 
         $logo = $dealer->dealership_logo;
 
-        if ($request->hasFile('logo_file')) {
+        if ($request->boolean('remove_logo')) {
             $this->deleteLogo($logo);
-            $logo = $this->storeLogo($request->file('logo_file'));
-            $logo = $this->normalizeLogo($logo);
-        } elseif (! empty($data['dealership_logo'])) {
+            $logo = null;
+        } elseif ($request->hasFile('logo_file')) {
+            $this->deleteLogo($logo);
+            $logo = $this->normalizeLogo($this->storeLogo($request->file('logo_file')));
+        } elseif (!empty($data['dealership_logo'])) {
             $logo = $this->normalizeLogo($data['dealership_logo']);
         }
 

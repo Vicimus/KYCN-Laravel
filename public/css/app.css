@@ -158,6 +158,22 @@ nav ul.pagination {
     -ms-interpolation-mode: bicubic;
 }
 
+.outer-logo .logo-actions {
+    background-color: #FFF;
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity .15s ease;
+    z-index: 2;
+}
+
+.outer-logo:hover .logo-actions {
+    opacity: 1;
+}
+
 .rsvp-form-logo {
     height: 42px;
     width: 285px;

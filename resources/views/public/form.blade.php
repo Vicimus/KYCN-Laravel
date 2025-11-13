@@ -13,7 +13,7 @@
 
     <div class="card shadow-sm set-max-width">
         <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between gap-3 mb-1">
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-1">
                 <div class="rsvp-form-logo">
                     <img src="{{ $logo }}"
                          id="rsvpFormLogoImage"
@@ -21,13 +21,15 @@
                          loading="lazy"
                          referrerpolicy="no-referrer"/>
                 </div>
-                <h3 class="m-0">Know Your Car Night</h3>
-            </div>
-            <div id="kycnDateDisplay"
-                 class="text-end fw-bold text-secondary mb-3"
-                 style="letter-spacing: 0.05em; font-size: 0.95rem;"
-                 data-default-text="{{ $defaultDateMessage }}">
-                {{ $initialDateText ?? $defaultDateMessage }}
+                <div class="d-flex flex-column align-items-end">
+                    <h3 class="m-0">Know Your Car Night</h3>
+                    <div id="kycnDateDisplay"
+                         class="text-end fw-bold text-secondary mb-3"
+                         style="letter-spacing: 0.05em; font-size: 0.95rem;"
+                         data-default-text="{{ $defaultDateMessage }}">
+                        {{ $initialDateText ?? $defaultDateMessage }}
+                    </div>
+                </div>
             </div>
 
             <form id="kycnForm" method="post" action="{{ route('public.form.store', request()->query()) }}">
@@ -56,9 +58,12 @@
                                 required>
                             <option value="">Select a dealership...</option>
                             @foreach($dealerOptions as $d)
+                                @php
+                                    $dLogo = $d->logo_url ?? config('brand.logos.bumper');
+                                @endphp
                                 <option value="{{ $d->name }}"
                                         data-date="{{ optional($d->know_your_car_date)->toDateString() }}"
-                                        data-logo="{{ $logo }}"
+                                        data-logo="{{ $dLogo }}"
                                         {{ old('dealership_name') === $d->name ? 'selected' : '' }}>
                                     {{ $d->name }} — {{ optional($d->know_your_car_date)->format('M j, Y') }}
                                 </option>
