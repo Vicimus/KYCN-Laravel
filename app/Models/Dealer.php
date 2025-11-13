@@ -31,17 +31,22 @@ class Dealer extends Model
      */
     public function getDealershipLogoUrlAttribute(): ?string
     {
-        $logo = $this->dealership_logo;
+        $value = $this->dealership_logo;
 
-        if (empty($logo)) {
+        if (empty($value)) {
             return null;
         }
 
-        if (Str::startsWith($logo, ['http://', 'https://', '//'])) {
-            return $logo;
+        if (Str::startsWith($value, ['http://', 'https://', '//'])) {
+            if (Str::startsWith($value, '//')) {
+                return (request()->isSecure() ? 'https:' : 'http:') . $value;
+            }
+            return $value;
         }
 
-        return asset(ltrim($logo, '/'));
+        $path = ltrim($value, '/');
+
+        return request()->isSecure() ? secure_url($path) : url($path);
     }
 
     protected static function booted()

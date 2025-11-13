@@ -27,9 +27,9 @@
                 @if($isEdit)
                     <div class="col-md-2">
                         <div class="d-flex flex-column">
-                            <span class="fs-md d-block mb-1">Current Logo</span>
+                            <span class="fs-md mb-1">Current Logo</span>
                             @if($dealer->dealership_logo_url)
-                                <div class="round-dealer-logo bigger">
+                                <div class="logo-thumb">
                                     <img src="{{ $dealer->dealership_logo_url }}" alt="{{ $dealer->name }} Logo"/>
                                 </div>
                                 <div class="form-check mt-1">

@@ -63,6 +63,7 @@ class DealerController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
+
         return view('admin.dealers.index', compact('dealers', 'q', 'orderParam'));
     }
 

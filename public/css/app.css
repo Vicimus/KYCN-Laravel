@@ -5,6 +5,9 @@
     --bs-link-color-rgb: 37, 89, 168;
     --vicimus-blue: #2559A8;
     --darker-vicimus-blue: #204F97;
+    --thumb-bg: #f6f8fa;
+    --thumb-border: var(--bs-border-color);
+    --thumb-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 body {
@@ -112,30 +115,34 @@ nav ul.pagination {
     border-right: thin solid var(--bs-border-color);
 }
 
-.round-dealer-logo {
+.logo-thumb {
     align-items: center;
-    background-color: #FFF;
+    aspect-ratio: 1 / 1;
+    background: var(--thumb-bg);
+    border: thin solid var(--thumb-border);
     border-radius: 50%;
-    box-shadow: var(--bs-box-shadow-sm);
+    box-shadow: var(--thumb-shadow);
     display: flex;
     justify-content: center;
     overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    will-change: transform;
+    width: 48px;
 }
 
-.round-dealer-logo:not(.bigger) {
-    height: 50px;
-    width: 50px;
-}
-
-.round-dealer-logo.bigger {
-    height: 100px;
-    width: 100px;
-}
-
-.round-dealer-logo img {
-    height: 90%;
+.logo-thumb img,
+.logo-thumb svg {
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+    max-height: 82%;
+    max-width: 82%;
     object-fit: contain;
-    width: 90%;
+    object-position: center;
+    -ms-interpolation-mode: bicubic;
+}
+
+.logo-thumb.lg-thumb {
+    width: 96px;
 }
 
 .rsvp-form-logo {

@@ -11,11 +11,9 @@
     <div class="d-flex flex-column bg-white rounded-2 shadow-sm w-100 overflow-hidden">
         <div class="d-flex justify-content-between align-items-start p-3 gap-3">
             <div class="d-flex align-items-center gap-2">
-                @if($dealer->dealership_logo_url)
-                    <div class="round-dealer-logo">
-                        <img src="{{ $dealer->dealership_logo_url }}" alt="{{ $dealer->name }} Logo"/>
-                    </div>
-                @endif
+                <div class="logo-thumb">
+                    <img src="{{ $dealer->dealership_logo_url }}" alt="{{ $dealer->name }} Logo"/>
+                </div>
                 <div class="fw-bold">{{ $dealer->name }}</div>
             </div>
 

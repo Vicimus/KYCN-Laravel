@@ -63,15 +63,12 @@
                     @foreach($dealers as $d)
                         @php
                             $url = url('/?d='.$d->code);
-                            $logo = $d?->dealership_logo ?: 'https://vicimus.com/wp-content/uploads/2023/08/bumper.svg';
                         @endphp
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="round-dealer-logo">
-                                        <img src="{{ $logo }}"
-                                             alt="{{ $d->name }} logo"
-                                        />
+                                    <div class="logo-thumb">
+                                        <img src="{{ $d->dealership_logo }}" alt="{{ $d->name }} logo"/>
                                     </div>
 
                                     <a href="{{ route('admin.dealers.show', $d) }}"
